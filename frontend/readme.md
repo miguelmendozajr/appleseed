@@ -28,14 +28,6 @@ Crea un archivo `.env` en la raíz del directorio `frontend` basándote en el ar
 cp .env.example .env
 ```
 
-Edita el archivo `.env` con la URL de tu backend:
-
-```env
-NEXT_PUBLIC_BACKEND_URL=http://localhost:3005
-```
-
-**Nota:** Las variables de entorno en Next.js que necesitan estar disponibles en el navegador deben tener el prefijo `NEXT_PUBLIC_`.
-
 ### 4. Ejecutar la aplicación en modo desarrollo
 
 ```bash
