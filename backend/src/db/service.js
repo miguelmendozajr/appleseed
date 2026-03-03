@@ -33,7 +33,29 @@ class DBService {
     const [rows] = await this.connection.query('SELECT * FROM OSC WHERE rfc = ?', [rfc]);
     return rows[0];
   }
+    async checkRFCdoners(rfc) {
+      if (!this.initialized) {
+        throw new Error('Service not initialized');
+      }
+      const [rows] = await this.connection.query('SELECT * FROM donantes WHERE rfc = ?', [rfc]);
+      return rows[0];
+    }
+      
+    async createDonor(rfc, nombre, contraseña, tipo_persona) {
+  if (!this.initialized) {
+    throw new Error('Service not initialized');
+  }
+  console.log('🎯🎯🎯 ESTA VERSIÓN SÍ SE ESTÁ USANDO - Inserting:', { rfc, nombre, contraseña: '***', tipo_persona });
+  
+  const [result] = await this.connection.query(
+    'INSERT INTO donantes (rfc, nombre, contraseña, tipo_persona) VALUES (?, ?, ?, ?)', 
+    [rfc, nombre, contraseña, tipo_persona]
+  );
+  
+  console.log('💾 Service - Insert result:', result);
+  return result.insertId;
 }
+  }
   
   module.exports = DBService;
   

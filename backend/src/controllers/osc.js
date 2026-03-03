@@ -11,12 +11,12 @@ class OSCController {
     }
 
     // Compare plain text password (Note: In production, use bcrypt.compare)
-    if (osc.contrasena !== password) {
+    if (osc.contraseña !== password) {
       return { success: false, message: 'RFC o contraseña incorrectos' };
     }
 
     // Don't return password in response
-    const { contrasena, ...oscData } = osc;
+    const { contraseña, ...oscData } = osc;
     return { success: true, data: oscData };
   }
 }
