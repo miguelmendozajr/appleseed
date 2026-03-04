@@ -3,21 +3,23 @@ class DonorController {
     constructor(service) {
       this.service = service;
     }
-  async singup(rfc, nombre, contraseña, tipo_persona) {
-    console.log('📝 Controller - Received:', { rfc, nombre, contraseña: '***', tipo_persona });
-    
+  async signup(rfc, nombre, contrasena, tipo_persona) {
     const doner = await this.service.checkRFCdoners(rfc);
-    console.log('📝 Controller - Check RFC result:', doner ? 'Found' : 'Not found');
-    
     if (doner) {
-        throw new Error('RFC already exists');
+        throw new Error('RFC ya existe');
     }
-    
-    console.log('📝 Controller - Creating donor with:', { rfc, nombre, contraseña: '***', tipo_persona });
-    const newDonerId = await this.service.createDonor(rfc, nombre, contraseña, tipo_persona);
-    console.log('📝 Controller - Created with ID:', newDonerId);
-    
-    return {id: newDonerId, rfc, nombre, tipo_persona};
+
+    await this.service.createDonor(rfc, nombre, contrasena, tipo_persona);
+    return { rfc, nombre, tipo_persona };
+  }
+
+  async login(rfc, contrasena) {
+    const doner = await this.service.checkRFCdoners(rfc);
+    if (!doner || doner.contrasena !== contrasena) {
+        throw new Error('RFC o contraseña incorrectos');
+    }
+    const { contrasena: _, ...donerData } = doner;
+    return donerData;
   }
 }
 

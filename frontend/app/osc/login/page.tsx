@@ -13,13 +13,21 @@ export default function LoginPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Check if form is valid
+  const isFormValid = () => {
+    return (
+      formData.rfc.trim() !== '' &&
+      formData.password.trim() !== ''
+    );
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/login`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/osc/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -34,7 +42,7 @@ export default function LoginPage() {
         localStorage.setItem('osc_data', JSON.stringify(data.data));
         
         // Redirect to dashboard
-        router.push('/dashboard');
+        router.push('/osc/dashboard');
       } else {
         setError(data.message || 'Error al iniciar sesión');
       }
@@ -58,6 +66,12 @@ export default function LoginPage() {
                 <span className="text-[#8BC34A]">seed</span>
               </span>
               <p className="ml-4 text-sm text-[#6B9FD4]">Sembrando la semilla de la justicia</p>
+            </Link>
+            <Link 
+              href="/donor/login" 
+              className="px-4 py-2 text-sm font-semibold text-[#8BC34A] border border-[#8BC34A] rounded-lg hover:bg-[#8BC34A] hover:text-white transition-colors"
+            >
+              Ir al inicio de sesión de donadores
             </Link>
           </div>
         </div>
@@ -116,8 +130,8 @@ export default function LoginPage() {
 
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full py-3 bg-[#8BC34A] text-white font-semibold rounded-lg hover:bg-[#7CB342] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                disabled={loading || !isFormValid()}
+                className="w-full py-3 bg-[#8BC34A] text-white font-semibold rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
               </button>
@@ -126,22 +140,10 @@ export default function LoginPage() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 ¿No tienes cuenta?{' '}
-                <Link href="/register" className="text-[#8BC34A] font-semibold hover:text-[#7CB342] transition-colors">
+                <Link href="/osc/signup" className="text-[#8BC34A] font-semibold hover:text-[#7CB342] transition-colors">
                   Regístrate aquí
                 </Link>
               </p>
-            </div>
-          </div>
-
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <span className="text-2xl mr-3">ℹ️</span>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Importante</h3>
-                <p className="text-sm text-gray-700">
-                  Solo organizaciones registradas como donatarias autorizadas ante el SAT pueden acceder a esta plataforma.
-                </p>
-              </div>
             </div>
           </div>
         </div>

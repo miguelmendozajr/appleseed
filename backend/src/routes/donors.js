@@ -1,11 +1,12 @@
 const express = require('express');
-const DonorsHandler = require('../handlers/donors');
-const DonorsController = require('../controllers/donors');
+const DonorHttpHandler = require('../handlers/donors');
+const DonorController = require('../controllers/donors');
 
 module.exports = (dbService) => {
   const router = express.Router();
-  const donorsController = new DonorsController(dbService);
-  const donorsHandler = new DonorsHandler(donorsController);
+  const donorsController = new DonorController(dbService);
+  const donorsHandler = new DonorHttpHandler(donorsController);
+  router.post('/signup', donorsHandler.signup.bind(donorsHandler));
   router.post('/login', donorsHandler.login.bind(donorsHandler));
   return router;
 };

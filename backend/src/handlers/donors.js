@@ -1,22 +1,31 @@
-class DonerHttpHandler {
-    constructor(donorController) {
-      this.donorController = donorController;
-    }
-  
-     async login(req, res) {
-  try {
-    console.log('Request body:', req.body);
-    const { rfc, nombre, contraseña, tipo_persona } = req.body;
-    console.log('Extracted:', { rfc, nombre, contraseña: '***', tipo_persona });
-    
-    const newDoner = await this.donorController.singup(rfc, nombre, contraseña, tipo_persona);
-    res.json(newDoner);
-  } catch (error) {
-    console.error('Error in login:', error);
-    res.status(500).json({ error: error.message });
+class DonorHttpHandler {
+  constructor(donorController) {
+    this.donorController = donorController;
   }
+  
+  async signup(req, res) {
+    try {
+      const { rfc, nombre, contrasena, tipo_persona } = req.body;
+        
+      const newDonor = await this.donorController.signup(rfc, nombre, contrasena, tipo_persona);
+      res.json(newDonor);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
+  async login(req, res) {
+    try {
+      const { rfc, contrasena } = req.body;
+      const donor = await this.donorController.login(rfc, contrasena);
+      if (!donor) {
+        return res.status(401).json({ error: 'RFC o contraseña incorrectos' });
+      }
+      res.json(donor);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
   }
 }
 
-// Export the class directly
-module.exports = DonerHttpHandler;
+module.exports = DonorHttpHandler;

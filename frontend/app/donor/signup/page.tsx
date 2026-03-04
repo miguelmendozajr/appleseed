@@ -9,7 +9,7 @@ export default function DonorSignupPage() {
   const [formData, setFormData] = useState({
     rfc: '',
     nombre: '',
-    contraseña: '',
+    contrasena: '',
     confirmContraseña: '',
     tipo_persona: 'fisica' // Valor por defecto
   });
@@ -48,12 +48,12 @@ export default function DonorSignupPage() {
     }
 
     // Validar contraseñas
-    if (formData.contraseña !== formData.confirmContraseña) {
+    if (formData.contrasena !== formData.confirmContraseña) {
       setError('Las contraseñas no coinciden');
       return;
     }
 
-    if (formData.contraseña.length < 8) {
+    if (formData.contrasena.length < 8) {
       setError('La contraseña debe tener al menos 8 caracteres');
       return;
     }
@@ -62,15 +62,8 @@ export default function DonorSignupPage() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-      console.log('Sending to:', `${backendUrl}/api/donors/login`);
-      console.log('Data:', { 
-        rfc: formData.rfc, 
-        nombre: formData.nombre, 
-        tipo_persona: formData.tipo_persona,
-        contraseña: '***' 
-      });
 
-      const response = await fetch(`${backendUrl}/api/donors/login`, {
+      const response = await fetch(`${backendUrl}/api/donors/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +71,7 @@ export default function DonorSignupPage() {
         body: JSON.stringify({
           rfc: formData.rfc,
           nombre: formData.nombre,
-          contraseña: formData.contraseña,
+          contrasena: formData.contrasena,
           tipo_persona: formData.tipo_persona
         }),
       });
@@ -90,7 +83,7 @@ export default function DonorSignupPage() {
         localStorage.setItem('donor_data', JSON.stringify(data));
         
         setTimeout(() => {
-          router.push('/donor-dashboard');
+          router.push('/donor/dashboard');
         }, 2000);
       } else {
         setError(data.error || 'Error al registrar donante');
@@ -117,10 +110,10 @@ export default function DonorSignupPage() {
               <p className="ml-4 text-sm text-[#6B9FD4]">Sembrando la semilla de la justicia</p>
             </Link>
             <Link 
-              href="/login" 
+              href="/osc/signup" 
               className="px-4 py-2 text-sm font-semibold text-[#8BC34A] border border-[#8BC34A] rounded-lg hover:bg-[#8BC34A] hover:text-white transition-colors"
             >
-              Organizaciones
+              Ir al registro de organizaciones civiles
             </Link>
           </div>
         </div>
@@ -155,7 +148,7 @@ export default function DonorSignupPage() {
               {/* Tipo de Persona - RADIO BUTTONS MEJORADOS */}
               <div className="mb-6">
                 <label className="block text-sm font-semibold text-gray-700 mb-3">
-                  Tipo de Persona <span className="text-red-500">*</span>
+                  Tipo de Persona
                 </label>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -191,9 +184,7 @@ export default function DonorSignupPage() {
                       </div>
                       <div>
                         <span className="font-semibold text-gray-800">Persona Física</span>
-                        <p className="text-xs text-gray-500 mt-1">RFC de 13 caracteres</p>
                       </div>
-                      <span className="ml-auto text-2xl">👤</span>
                     </div>
                   </label>
 
@@ -229,9 +220,7 @@ export default function DonorSignupPage() {
                       </div>
                       <div>
                         <span className="font-semibold text-gray-800">Persona Moral</span>
-                        <p className="text-xs text-gray-500 mt-1">RFC de 12 caracteres</p>
                       </div>
-                      <span className="ml-auto text-2xl">🏢</span>
                     </div>
                   </label>
                 </div>
@@ -240,7 +229,7 @@ export default function DonorSignupPage() {
               {/* RFC Field */}
               <div>
                 <label htmlFor="rfc" className="block text-sm font-semibold text-gray-700 mb-2">
-                  RFC <span className="text-red-500">*</span>
+                  RFC
                 </label>
                 <input
                   id="rfc"
@@ -262,7 +251,7 @@ export default function DonorSignupPage() {
               {/* Nombre/Razón Social Field */}
               <div>
                 <label htmlFor="nombre" className="block text-sm font-semibold text-gray-700 mb-2">
-                  {formData.tipo_persona === 'fisica' ? 'Nombre Completo' : 'Razón Social'} <span className="text-red-500">*</span>
+                  {formData.tipo_persona === 'fisica' ? 'Nombre Completo' : 'Razón Social'}
                 </label>
                 <input
                   id="nombre"
@@ -277,15 +266,15 @@ export default function DonorSignupPage() {
 
               {/* Contraseña Field */}
               <div>
-                <label htmlFor="contraseña" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Contraseña <span className="text-red-500">*</span>
+                <label htmlFor="contrasena" className="block text-sm font-semibold text-gray-700 mb-2">
+                  Contraseña
                 </label>
                 <input
-                  id="contraseña"
+                  id="contrasena"
                   type="password"
                   required
-                  value={formData.contraseña}
-                  onChange={(e) => setFormData({ ...formData, contraseña: e.target.value })}
+                  value={formData.contrasena}
+                  onChange={(e) => setFormData({ ...formData, contrasena: e.target.value })}
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-all"
                   placeholder="Mínimo 8 caracteres"
                   minLength={8}
@@ -295,7 +284,7 @@ export default function DonorSignupPage() {
               {/* Confirm Contraseña Field */}
               <div>
                 <label htmlFor="confirmContraseña" className="block text-sm font-semibold text-gray-700 mb-2">
-                  Confirmar Contraseña <span className="text-red-500">*</span>
+                  Confirmar Contraseña
                 </label>
                 <input
                   id="confirmContraseña"
@@ -310,24 +299,24 @@ export default function DonorSignupPage() {
               </div>
 
               {/* Password strength indicator */}
-              {formData.contraseña && (
+              {formData.contrasena && (
                 <div className="space-y-1">
                   <div className="flex justify-between text-xs">
                     <span className="text-gray-600">Seguridad de contraseña:</span>
                     <span className={
-                      formData.contraseña.length < 8 ? 'text-red-600' :
-                      formData.contraseña.length < 10 ? 'text-yellow-600' :
+                      formData.contrasena.length < 8 ? 'text-red-600' :
+                      formData.contrasena.length < 10 ? 'text-yellow-600' :
                       'text-green-600'
                     }>
-                      {formData.contraseña.length < 8 ? 'Débil' :
-                       formData.contraseña.length < 10 ? 'Media' : 'Fuerte'}
+                      {formData.contrasena.length < 8 ? 'Débil' :
+                       formData.contrasena.length < 10 ? 'Media' : 'Fuerte'}
                     </span>
                   </div>
                   <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
                     <div 
                       className={`h-full transition-all ${
-                        formData.contraseña.length < 8 ? 'bg-red-500 w-1/3' :
-                        formData.contraseña.length < 10 ? 'bg-yellow-500 w-2/3' :
+                        formData.contrasena.length < 8 ? 'bg-red-500 w-1/3' :
+                        formData.contrasena.length < 10 ? 'bg-yellow-500 w-2/3' :
                         'bg-green-500 w-full'
                       }`}
                     />
@@ -338,7 +327,7 @@ export default function DonorSignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-[#8BC34A] text-white font-semibold rounded-lg hover:bg-[#7CB342] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
+                className="w-full py-3 bg-[#8BC34A] text-white font-semibold rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {loading ? 'Registrando...' : 'Registrarse'}
               </button>
@@ -347,24 +336,10 @@ export default function DonorSignupPage() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 ¿Ya tienes cuenta?{' '}
-                <Link href="/donor-login" className="text-[#8BC34A] font-semibold hover:text-[#7CB342] transition-colors">
+                <Link href="/donor/login" className="text-[#8BC34A] font-semibold hover:text-[#7CB342] transition-colors">
                   Inicia sesión aquí
                 </Link>
               </p>
-            </div>
-          </div>
-
-          {/* Information Box */}
-          <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <span className="text-2xl mr-3">📝</span>
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-1">Acerca del RFC</h3>
-                <p className="text-sm text-gray-700">
-                  <strong>Persona Física:</strong> 13 caracteres (ej: ABCD123456XYZ)<br/>
-                  <strong>Persona Moral:</strong> 12 caracteres (ej: ABC123456XYZ)
-                </p>
-              </div>
             </div>
           </div>
         </div>

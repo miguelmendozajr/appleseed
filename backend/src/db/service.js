@@ -26,36 +26,56 @@ class DBService {
     return rows;
   }
 
-  async loginOSC(rfc) {
+  async getAllOSC(){
+    if (!this.initialized) {
+        throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query('SELECT rfc, nombre, descripcion, logo FROM OSC');
+    return rows;
+  }
+
+  async checkOSC(rfc) {
     if (!this.initialized) {
       throw new Error('Service not initialized');
     }
     const [rows] = await this.connection.query('SELECT * FROM OSC WHERE rfc = ?', [rfc]);
     return rows[0];
   }
-    async checkRFCdoners(rfc) {
-      if (!this.initialized) {
-        throw new Error('Service not initialized');
-      }
-      const [rows] = await this.connection.query('SELECT * FROM donantes WHERE rfc = ?', [rfc]);
-      return rows[0];
+
+  async checkRFCdoners(rfc) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
     }
+    const [rows] = await this.connection.query('SELECT * FROM donantes WHERE rfc = ?', [rfc]);
+    return rows[0];
+  }
       
-    async createDonor(rfc, nombre, contraseña, tipo_persona) {
-  if (!this.initialized) {
-    throw new Error('Service not initialized');
+  async createDonor(rfc, nombre, contrasena, tipo_persona) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const [result] = await this.connection.query(
+      'INSERT INTO donantes (rfc, nombre, contrasena, tipo_persona) VALUES (?, ?, ?, ?)', 
+      [rfc, nombre, contrasena, tipo_persona]
+    );
+    
+    return result.insertId;
   }
-  console.log('🎯🎯🎯 ESTA VERSIÓN SÍ SE ESTÁ USANDO - Inserting:', { rfc, nombre, contraseña: '***', tipo_persona });
-  
-  const [result] = await this.connection.query(
-    'INSERT INTO donantes (rfc, nombre, contraseña, tipo_persona) VALUES (?, ?, ?, ?)', 
-    [rfc, nombre, contraseña, tipo_persona]
-  );
-  
-  console.log('💾 Service - Insert result:', result);
-  return result.insertId;
+
+  async createOSC(rfc, nombre, contrasena, descripcion) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const [result] = await this.connection.query(
+      'INSERT INTO OSC (rfc, nombre, contrasena, descripcion) VALUES (?, ?, ?, ?)', 
+      [rfc, nombre, contrasena, descripcion]
+    );
+    
+    return result.insertId;
+  }
 }
-  }
   
-  module.exports = DBService;
+module.exports = DBService;
   
