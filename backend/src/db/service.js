@@ -26,7 +26,15 @@ class DBService {
     return rows;
   }
 
-  async loginOSC(rfc) {
+  async getAllOSC(){
+    if (!this.initialized) {
+        throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query('SELECT nombre, rfc, logo FROM OSC');
+    return rows;
+  }
+
+  async checkOSC(rfc) {
     if (!this.initialized) {
       throw new Error('Service not initialized');
     }

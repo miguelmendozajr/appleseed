@@ -3,6 +3,15 @@ class OSCHttpHandler {
     this.oscController = oscController;
   }
 
+  async getAll(req, res) { 
+    try {
+      const oscList = await this.oscController.getAll();
+      res.json(oscList);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  }
+
   async login(req, res) {
     try {
       const { rfc, password } = req.body;

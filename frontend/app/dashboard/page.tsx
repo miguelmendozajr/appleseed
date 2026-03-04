@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Navbar from '@/components/navbar';
 
 interface Lawyer {
   id: number;
@@ -61,31 +62,11 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Navigation */}
-      <nav className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center">
-              <span className="text-3xl font-bold">
-                <span className="text-[#4A6B6D]">Apple</span>
-                <span className="text-[#8BC34A]">seed</span>
-              </span>
-              <p className="ml-4 text-sm text-[#6B9FD4]">Dashboard</p>
-            </div>
-            <div className="flex items-center space-x-6">
-              <div className="text-right">
-                <p className="text-sm font-semibold text-gray-900">{oscData?.nombre || 'Organización'}</p>
-                <p className="text-xs text-gray-500">{oscData?.rfc}</p>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="px-4 py-2 text-sm text-gray-700 hover:text-red-600 transition-colors"
-              >
-                Cerrar sesión
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <Navbar 
+        userData={oscData} 
+        userType="osc"
+        onLogout={handleLogout} 
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Section */}

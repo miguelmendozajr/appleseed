@@ -16,7 +16,7 @@ dbService.initialize()
     console.log('Database connected');
 
     app.use('/api/lawyers', lawyersRoutes(dbService));
-    app.use('/api/auth', oscRoutes(dbService));
+    app.use('/api/osc', oscRoutes(dbService));
 
     const PORT = process.env.PORT || 3005;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
