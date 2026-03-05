@@ -22,6 +22,19 @@ export default function DashboardPage() {
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [donaciones, setDonaciones] = useState([]);
+  const [donantesResumen, setDonantesResumen] = useState<Array<{
+    rfc: string;
+    nombre: string;
+    tipo: string;
+    montoTotal: number;
+    donaciones: any[];
+  }>>([]);
+  const [loadingDonaciones, setLoadingDonaciones] = useState(true);
+  const [stats, setStats] = useState({
+    montoTotal: 0,
+    cantidadDonaciones: 0
+  });
 
   useEffect(() => {
     // Check if user is logged in
@@ -31,10 +44,14 @@ export default function DashboardPage() {
       return;
     }
 
-    setOscData(JSON.parse(storedData));
+    const parsedData = JSON.parse(storedData);
+    setOscData(parsedData);
 
     // Fetch lawyers
     fetchLawyers();
+    
+    // Fetch donaciones con el RFC de la OSC
+    fetchDonaciones(parsedData.rfc);
   }, [router]);
 
   const fetchLawyers = async () => {
@@ -50,6 +67,63 @@ export default function DashboardPage() {
       console.error('Error fetching lawyers:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchDonaciones = async (rfc: string) => {
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/donations/osc?rfc=${rfc}`,
+        {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al cargar donaciones');
+      }
+
+      const data = await response.json();
+      setDonaciones(data);
+      
+      // Calcular estadísticas
+      const total = data.reduce((acc: number, don: any) => {
+        const valor = don.Tipo === 'especie' ? parseFloat(don.Valor_estimado) : parseFloat(don.Monto);
+        return acc + valor;
+      }, 0);
+      
+      setStats({
+        montoTotal: total,
+        cantidadDonaciones: data.length
+      });
+
+      // Agrupar por donante para la tabla de donantes
+      const donantesMap = new Map();
+      data.forEach((don: any) => {
+        if (!donantesMap.has(don.rfc_donantes)) {
+          donantesMap.set(don.rfc_donantes, {
+            rfc: don.rfc_donantes,
+            nombre: don.nombre_donante || 'Desconocido',
+            tipo: don.tipo_donante || 'fisica',
+            montoTotal: 0,
+            donaciones: []
+          });
+        }
+        const donante = donantesMap.get(don.rfc_donantes);
+        const valor = don.Tipo === 'especie' ? parseFloat(don.Valor_estimado) : parseFloat(don.Monto);
+        donante.montoTotal += valor;
+        donante.donaciones.push(don);
+      });
+      
+      setDonantesResumen(Array.from(donantesMap.values()));
+    } catch (err) {
+      console.error('Error fetching donaciones:', err);
+      setError('No se pudieron cargar las donaciones');
+    } finally {
+      setLoadingDonaciones(false);
     }
   };
 
@@ -96,7 +170,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Monto acumulado en donativos</p>
-                  <p className="text-3xl font-bold text-gray-900">-</p>
+                  <p className="text-3xl font-bold text-gray-900">${stats.montoTotal.toLocaleString()}</p>
                 </div>
               </div>
             </div>
@@ -106,7 +180,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Cantidad de donativos</p>
-                  <p className="text-3xl font-bold text-gray-900">-</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.cantidadDonaciones}</p>
                 </div>
               </div>
             </div>
@@ -168,7 +242,39 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-
+                    {loadingDonaciones ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          Cargando donantes...
+                        </td>
+                      </tr>
+                    ) : donantesResumen.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
+                          No hay donantes registrados
+                        </td>
+                      </tr>
+                    ) : (
+                      donantesResumen.map((donante, index) => (
+                        <tr key={donante.rfc} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {donante.nombre}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {donante.rfc}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {donante.tipo === 'fisica' ? '👤 Física' : '🏢 Moral'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${donante.montoTotal.toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className="text-gray-400">-</span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -209,6 +315,64 @@ export default function DashboardPage() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
+                    {loadingDonaciones ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                          Cargando donaciones...
+                        </td>
+                      </tr>
+                    ) : donaciones.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="px-6 py-4 text-center text-gray-500">
+                          No hay donaciones registradas
+                        </td>
+                      </tr>
+                    ) : (
+                      donaciones.map((donacion: any, index: number) => (
+                        <tr key={donacion.ID} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {donacion.ID}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {donacion.Tipo}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            ${parseFloat(donacion.Monto).toLocaleString()}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {donacion.rfc_donantes}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {donacion.Necesita_CFDI ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
+                                Sí
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
+                                No
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {donacion.Fotografia_delbien ? (
+                              <a 
+                                href={donacion.Fotografia_delbien} 
+                                target="_blank" 
+                                className="text-blue-600 hover:underline"
+                              >
+                                📎 Ver
+                              </a>
+                            ) : donacion.Descripcion_delbien ? (
+                              <span className="text-gray-600" title={donacion.Descripcion_delbien}>
+                                📝 {donacion.Descripcion_delbien.substring(0, 20)}...
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
