@@ -14,9 +14,7 @@ interface OSC {
 interface DonorData {
   nombre: string;
   rfc: string;
-  email: string;
-  regimenFiscal?: string;
-  codigoPostalFiscal?: string;
+  tipo_persona?: string;
 }
 
 export default function DonorsPage() {
@@ -43,9 +41,28 @@ export default function DonorsPage() {
   const [evidenciaFotografica, setEvidenciaFotografica] = useState<File | null>(null);
   const [comprobanteTransferencia, setComprobanteTransferencia] = useState<File | null>(null);
   
-  // Campos para CFDI
+  // Campos para Persona Moral
+  const [nombreRepresentanteLegal, setNombreRepresentanteLegal] = useState('');
+  const [actaConstitutiva, setActaConstitutiva] = useState<File | null>(null);
+  const [poderRepresentanteLegal, setPoderRepresentanteLegal] = useState<File | null>(null);
+  const [identificacionRepresentante, setIdentificacionRepresentante] = useState<File | null>(null);
+  const [constanciaSituacionFiscalMoral, setConstanciaSituacionFiscalMoral] = useState<File | null>(null);
+  const [comprobanteDomicilioFiscalMoral, setComprobanteDomicilioFiscalMoral] = useState<File | null>(null);
+  
+  // Campos para Persona Física
+  const [curp, setCurp] = useState('');
   const [regimenFiscal, setRegimenFiscal] = useState('');
-  const [codigoPostalFiscal, setCodigoPostalFiscal] = useState('');
+  const [identificacionVigente, setIdentificacionVigente] = useState<File | null>(null);
+  const [constanciaSituacionFiscalFisica, setConstanciaSituacionFiscalFisica] = useState<File | null>(null);
+  const [comprobanteDomicilioFisica, setComprobanteDomicilioFisica] = useState<File | null>(null);
+  
+  // Campos de dirección (compartidos por ambos tipos)
+  const [calle, setCalle] = useState('');
+  const [numeroExterior, setNumeroExterior] = useState('');
+  const [colonia, setColonia] = useState('');
+  const [municipio, setMunicipio] = useState('');
+  const [estado, setEstado] = useState('');
+  const [codigoPostal, setCodigoPostal] = useState('');
 
   useEffect(() => {
     // Check if donor is logged in (placeholder - you'll need to implement donor login)
@@ -58,17 +75,10 @@ export default function DonorsPage() {
     
     const parsedData = JSON.parse(storedData);
     setDonorData(parsedData);
-      
-    // Establecer valores por defecto para CFDI si existen
-    if (parsedData.regimenFiscal) {
-      setRegimenFiscal(parsedData.regimenFiscal);
-    }
-    if (parsedData.codigoPostalFiscal) {
-      setCodigoPostalFiscal(parsedData.codigoPostalFiscal);
-    }
+    
     // Fetch OSCs
     fetchOSCs();
-  }, []);
+  }, [router]);
 
   useEffect(() => {
     // Filter OSCs based on search term
@@ -122,17 +132,28 @@ export default function DonorsPage() {
     setEvidenciaFotografica(null);
     setComprobanteTransferencia(null);
     
-    // Resetear campos CFDI a valores por defecto del donante
-    if (donorData?.regimenFiscal) {
-      setRegimenFiscal(donorData.regimenFiscal);
-    } else {
-      setRegimenFiscal('');
-    }
-    if (donorData?.codigoPostalFiscal) {
-      setCodigoPostalFiscal(donorData.codigoPostalFiscal);
-    } else {
-      setCodigoPostalFiscal('');
-    }
+    // Resetear campos de Persona Moral
+    setNombreRepresentanteLegal('');
+    setActaConstitutiva(null);
+    setPoderRepresentanteLegal(null);
+    setIdentificacionRepresentante(null);
+    setConstanciaSituacionFiscalMoral(null);
+    setComprobanteDomicilioFiscalMoral(null);
+    
+    // Resetear campos de Persona Física
+    setCurp('');
+    setRegimenFiscal('');
+    setIdentificacionVigente(null);
+    setConstanciaSituacionFiscalFisica(null);
+    setComprobanteDomicilioFisica(null);
+    
+    // Resetear campos de dirección
+    setCalle('');
+    setNumeroExterior('');
+    setColonia('');
+    setMunicipio('');
+    setEstado('');
+    setCodigoPostal('');
   };
 
   const handleSubmitDonation = (e: React.FormEvent) => {
@@ -146,10 +167,6 @@ export default function DonorsPage() {
       tipoDonacion,
       referenciaBancaria,
       necesitaCFDI,
-      ...(necesitaCFDI && {
-        regimenFiscal,
-        codigoPostalFiscal
-      }),
       ...(tipoDonacion === 'especie' && {
         descripcionBien,
         valorEstimado,
@@ -157,6 +174,33 @@ export default function DonorsPage() {
       }),
       ...(tipoDonacion === 'transferencia' && {
         comprobanteTransferencia: comprobanteTransferencia?.name
+      }),
+      ...(donorData?.tipo_persona === 'moral' && {
+        nombreRepresentanteLegal,
+        actaConstitutiva: actaConstitutiva?.name,
+        poderRepresentanteLegal: poderRepresentanteLegal?.name,
+        identificacionRepresentante: identificacionRepresentante?.name,
+        constanciaSituacionFiscalMoral: constanciaSituacionFiscalMoral?.name,
+        comprobanteDomicilioFiscalMoral: comprobanteDomicilioFiscalMoral?.name,
+        calle,
+        numeroExterior,
+        colonia,
+        municipio,
+        estado,
+        codigoPostal
+      }),
+      ...(donorData?.tipo_persona === 'fisica' && {
+        curp,
+        regimenFiscal,
+        identificacionVigente: identificacionVigente?.name,
+        constanciaSituacionFiscalFisica: constanciaSituacionFiscalFisica?.name,
+        comprobanteDomicilioFisica: comprobanteDomicilioFisica?.name,
+        calle,
+        numeroExterior,
+        colonia,
+        municipio,
+        estado,
+        codigoPostal
       })
     });
     
@@ -171,28 +215,48 @@ export default function DonorsPage() {
   const isFormValid = () => {
     if (!tipoDonacion) return false;
     
-    // Validar campos de CFDI si está seleccionado
-    if (necesitaCFDI) {
-      if (!regimenFiscal || !codigoPostalFiscal.trim()) {
-        return false;
-      }
-    }
+    // Validar campos básicos según tipo de donación
+    let isBasicValid = false;
     
     if (tipoDonacion === 'efectivo') {
-      return monto.trim() !== '' && parseFloat(monto) > 0;
-    }
-    
-    if (tipoDonacion === 'especie') {
-      return descripcionBien.trim() !== '' && 
+      isBasicValid = monto.trim() !== '' && parseFloat(monto) > 0;
+    } else if (tipoDonacion === 'especie') {
+      isBasicValid = descripcionBien.trim() !== '' && 
              valorEstimado.trim() !== '' && 
              parseFloat(valorEstimado) > 0 &&
              evidenciaFotografica !== null;
-    }
-    
-    if (tipoDonacion === 'transferencia') {
-      return monto.trim() !== '' && 
+    } else if (tipoDonacion === 'transferencia') {
+      isBasicValid = monto.trim() !== '' && 
              parseFloat(monto) > 0 &&
              comprobanteTransferencia !== null;
+    }
+    
+    if (!isBasicValid) return false;
+    
+    // Validar campos de dirección (compartidos)
+    const isAddressValid = calle.trim() !== '' &&
+                          numeroExterior.trim() !== '' &&
+                          colonia.trim() !== '' &&
+                          municipio.trim() !== '' &&
+                          estado.trim() !== '' &&
+                          codigoPostal.trim() !== '';
+    
+    if (!isAddressValid) return false;
+    
+    // Validar campos específicos según tipo de persona
+    if (donorData?.tipo_persona === 'moral') {
+      return nombreRepresentanteLegal.trim() !== '' &&
+             actaConstitutiva !== null &&
+             poderRepresentanteLegal !== null &&
+             identificacionRepresentante !== null &&
+             constanciaSituacionFiscalMoral !== null &&
+             comprobanteDomicilioFiscalMoral !== null;
+    } else if (donorData?.tipo_persona === 'fisica') {
+      return curp.trim() !== '' &&
+             regimenFiscal.trim() !== '' &&
+             identificacionVigente !== null &&
+             constanciaSituacionFiscalFisica !== null &&
+             comprobanteDomicilioFisica !== null;
     }
     
     return false;
@@ -525,85 +589,392 @@ export default function DonorsPage() {
                 </div>
               )}
 
-              {/* Necesita CFDI - Solo si el tipo de donación está seleccionado */}
+              {/* Sección de Dirección - compartida por ambos tipos de persona */}
               {tipoDonacion && (
                 <>
-                  <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos de Domicilio</h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="col-span-2">
+                      <label htmlFor="calle" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Calle *
+                      </label>
+                      <input
+                        type="text"
+                        id="calle"
+                        required
+                        value={calle}
+                        onChange={(e) => setCalle(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                        placeholder="Nombre de la calle"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="numeroExterior" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Número Exterior *
+                      </label>
+                      <input
+                        type="text"
+                        id="numeroExterior"
+                        required
+                        value={numeroExterior}
+                        onChange={(e) => setNumeroExterior(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                        placeholder="123"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="codigoPostal" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Código Postal *
+                      </label>
+                      <input
+                        type="text"
+                        id="codigoPostal"
+                        required
+                        value={codigoPostal}
+                        onChange={(e) => setCodigoPostal(e.target.value)}
+                        maxLength={5}
+                        pattern="[0-9]{5}"
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                        placeholder="12345"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label htmlFor="colonia" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Colonia *
+                      </label>
+                      <input
+                        type="text"
+                        id="colonia"
+                        required
+                        value={colonia}
+                        onChange={(e) => setColonia(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                        placeholder="Nombre de la colonia"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="municipio" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Municipio *
+                      </label>
+                      <input
+                        type="text"
+                        id="municipio"
+                        required
+                        value={municipio}
+                        onChange={(e) => setMunicipio(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                        placeholder="Municipio o Alcaldía"
+                      />
+                    </div>
+
+                    <div>
+                      <label htmlFor="estado" className="block text-sm font-semibold text-gray-700 mb-2">
+                        Estado *
+                      </label>
+                      <input
+                        type="text"
+                        id="estado"
+                        required
+                        value={estado}
+                        onChange={(e) => setEstado(e.target.value)}
+                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                        placeholder="Estado"
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Campos específicos para Persona Moral */}
+              {tipoDonacion && donorData?.tipo_persona === 'moral' && (
+                <>
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos del Representante Legal</h3>
+                  </div>
+
+                  <div>
+                    <label htmlFor="nombreRepresentanteLegal" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Nombre del Representante Legal *
+                    </label>
                     <input
-                      type="checkbox"
-                      id="necesitaCFDI"
-                      checked={necesitaCFDI}
-                      onChange={(e) => setNecesitaCFDI(e.target.checked)}
-                      className="w-5 h-5 text-[#8BC34A] border-gray-300 rounded focus:ring-2 focus:ring-[#8BC34A] cursor-pointer"
+                      type="text"
+                      id="nombreRepresentanteLegal"
+                      required
+                      value={nombreRepresentanteLegal}
+                      onChange={(e) => setNombreRepresentanteLegal(e.target.value)}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                      placeholder="Nombre completo"
                     />
-                    <label htmlFor="necesitaCFDI" className="text-sm font-medium text-gray-700 cursor-pointer">
-                      Necesito CFDI (Factura electrónica para deducción de impuestos)
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Documentos Requeridos</h3>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Acta Constitutiva *
+                    </label>
+                    <input
+                      type="file"
+                      id="actaConstitutiva"
+                      required
+                      accept=".pdf"
+                      onChange={(e) => setActaConstitutiva(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="actaConstitutiva"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {actaConstitutiva ? actaConstitutiva.name : 'Seleccionar PDF...'}
+                      </span>
                     </label>
                   </div>
 
-                  {/* Campos adicionales si necesita CFDI */}
-                  {necesitaCFDI && (
-                    <>
-                      <div>
-                        <label htmlFor="regimenFiscal" className="block text-sm font-semibold text-gray-700 mb-2">
-                          Régimen Fiscal *
-                        </label>
-                        <div className="relative">
-                          <select
-                            id="regimenFiscal"
-                            required
-                            value={regimenFiscal}
-                            onChange={(e) => setRegimenFiscal(e.target.value)}
-                            className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black appearance-none cursor-pointer bg-white"
-                          >
-                            <option value="">Seleccionar régimen fiscal</option>
-                            <option value="601">601 - General de Ley PM</option>
-                            <option value="603">603 - Personas Morales Fines no Lucrativos</option>
-                            <option value="605">605 - Sueldos y Salarios</option>
-                            <option value="606">606 - Arrendamiento</option>
-                            <option value="607">607 - Enajenación de Bienes</option>
-                            <option value="608">608 - Demás Ingresos</option>
-                            <option value="610">610 - Residentes en el Extranjero</option>
-                            <option value="611">611 - Dividendos</option>
-                            <option value="612">612 - Actividades Empresariales PF</option>
-                            <option value="614">614 - Intereses</option>
-                            <option value="615">615 - Sin Obligaciones Fiscales</option>
-                            <option value="616">616 - Sin Actividad Económica</option>
-                            <option value="620">620 - Sociedades Cooperativas</option>
-                            <option value="621">621 - Incorporación Fiscal</option>
-                            <option value="622">622 - Actividades Agrícolas</option>
-                            <option value="623">623 - Opcional para Grupos de Sociedades</option>
-                            <option value="624">624 - Coordinados</option>
-                            <option value="625">625 - RESICO PF</option>
-                            <option value="626">626 - RESICO PM</option>
-                          </select>
-                          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Poder del Representante Legal *
+                    </label>
+                    <input
+                      type="file"
+                      id="poderRepresentanteLegal"
+                      required
+                      accept=".pdf"
+                      onChange={(e) => setPoderRepresentanteLegal(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="poderRepresentanteLegal"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {poderRepresentanteLegal ? poderRepresentanteLegal.name : 'Seleccionar PDF...'}
+                      </span>
+                    </label>
+                  </div>
 
-                      <div>
-                        <label htmlFor="codigoPostalFiscal" className="block text-sm font-semibold text-gray-700 mb-2">
-                          Código Postal Fiscal *
-                        </label>
-                        <input
-                          type="text"
-                          id="codigoPostalFiscal"
-                          required
-                          value={codigoPostalFiscal}
-                          onChange={(e) => setCodigoPostalFiscal(e.target.value)}
-                          maxLength={5}
-                          pattern="[0-9]{5}"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
-                          placeholder="12345"
-                        />
-                      </div>
-                    </>
-                  )}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Identificación Oficial del Representante *
+                    </label>
+                    <input
+                      type="file"
+                      id="identificacionRepresentante"
+                      required
+                      accept="image/*,.pdf"
+                      onChange={(e) => setIdentificacionRepresentante(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="identificacionRepresentante"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {identificacionRepresentante ? identificacionRepresentante.name : 'Seleccionar archivo...'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Constancia de Situación Fiscal *
+                    </label>
+                    <input
+                      type="file"
+                      id="constanciaSituacionFiscalMoral"
+                      required
+                      accept=".pdf"
+                      onChange={(e) => setConstanciaSituacionFiscalMoral(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="constanciaSituacionFiscalMoral"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {constanciaSituacionFiscalMoral ? constanciaSituacionFiscalMoral.name : 'Seleccionar PDF...'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Comprobante de Domicilio Fiscal *
+                    </label>
+                    <input
+                      type="file"
+                      id="comprobanteDomicilioFiscalMoral"
+                      required
+                      accept="image/*,.pdf"
+                      onChange={(e) => setComprobanteDomicilioFiscalMoral(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="comprobanteDomicilioFiscalMoral"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {comprobanteDomicilioFiscalMoral ? comprobanteDomicilioFiscalMoral.name : 'Seleccionar archivo...'}
+                      </span>
+                    </label>
+                  </div>
                 </>
+              )}
+
+              {/* Campos específicos para Persona Física */}
+              {tipoDonacion && donorData?.tipo_persona === 'fisica' && (
+                <>
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos Adicionales</h3>
+                  </div>
+
+                  <div>
+                    <label htmlFor="curp" className="block text-sm font-semibold text-gray-700 mb-2">
+                      CURP *
+                    </label>
+                    <input
+                      type="text"
+                      id="curp"
+                      required
+                      value={curp}
+                      onChange={(e) => setCurp(e.target.value.toUpperCase())}
+                      maxLength={18}
+                      pattern="[A-Z]{4}[0-9]{6}[HM][A-Z]{5}[0-9]{2}"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black"
+                      placeholder="CURP (18 caracteres)"
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="regimenFiscalFisica" className="block text-sm font-semibold text-gray-700 mb-2">
+                      Régimen Fiscal *
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="regimenFiscalFisica"
+                        required
+                        value={regimenFiscal}
+                        onChange={(e) => setRegimenFiscal(e.target.value)}
+                        className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#8BC34A] focus:border-transparent transition-colors text-black appearance-none cursor-pointer bg-white"
+                      >
+                        <option value="">Seleccionar régimen fiscal</option>
+                        <option value="605">605 - Sueldos y Salarios</option>
+                        <option value="606">606 - Arrendamiento</option>
+                        <option value="607">607 - Enajenación de Bienes</option>
+                        <option value="608">608 - Demás Ingresos</option>
+                        <option value="610">610 - Residentes en el Extranjero</option>
+                        <option value="611">611 - Dividendos</option>
+                        <option value="612">612 - Actividades Empresariales PF</option>
+                        <option value="614">614 - Intereses</option>
+                        <option value="615">615 - Sin Obligaciones Fiscales</option>
+                        <option value="616">616 - Sin Actividad Económica</option>
+                        <option value="621">621 - Incorporación Fiscal</option>
+                        <option value="622">622 - Actividades Agrícolas</option>
+                        <option value="625">625 - RESICO PF</option>
+                      </select>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Documentos Requeridos</h3>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Identificación Vigente (INE o Pasaporte) *
+                    </label>
+                    <input
+                      type="file"
+                      id="identificacionVigente"
+                      required
+                      accept="image/*,.pdf"
+                      onChange={(e) => setIdentificacionVigente(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="identificacionVigente"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {identificacionVigente ? identificacionVigente.name : 'Seleccionar archivo...'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Constancia de Situación Fiscal *
+                    </label>
+                    <input
+                      type="file"
+                      id="constanciaSituacionFiscalFisica"
+                      required
+                      accept=".pdf"
+                      onChange={(e) => setConstanciaSituacionFiscalFisica(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="constanciaSituacionFiscalFisica"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {constanciaSituacionFiscalFisica ? constanciaSituacionFiscalFisica.name : 'Seleccionar PDF...'}
+                      </span>
+                    </label>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Comprobante de Domicilio *
+                    </label>
+                    <input
+                      type="file"
+                      id="comprobanteDomicilioFisica"
+                      required
+                      accept="image/*,.pdf"
+                      onChange={(e) => setComprobanteDomicilioFisica(e.target.files?.[0] || null)}
+                      className="hidden"
+                    />
+                    <label
+                      htmlFor="comprobanteDomicilioFisica"
+                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                    >
+                      <span className="text-sm text-gray-600">
+                        {comprobanteDomicilioFisica ? comprobanteDomicilioFisica.name : 'Seleccionar archivo...'}
+                      </span>
+                    </label>
+                  </div>
+                </>
+              )}
+
+              {/* Necesita CFDI checkbox */}
+              {tipoDonacion && (
+                <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
+                  <input
+                    type="checkbox"
+                    id="necesitaCFDI"
+                    checked={necesitaCFDI}
+                    onChange={(e) => setNecesitaCFDI(e.target.checked)}
+                    className="w-5 h-5 text-[#8BC34A] border-gray-300 rounded focus:ring-2 focus:ring-[#8BC34A] cursor-pointer"
+                  />
+                  <label htmlFor="necesitaCFDI" className="text-sm font-medium text-gray-700 cursor-pointer">
+                    Necesito CFDI (Factura electrónica para deducción de impuestos)
+                  </label>
+                </div>
               )}
 
               {/* Submit Buttons */}

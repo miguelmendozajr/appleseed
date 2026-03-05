@@ -5,6 +5,7 @@ const DBService = require('./src/db/service');
 const lawyersRoutes = require('./src/routes/lawyers');
 const oscRoutes = require('./src/routes/osc');
 const donorsRoutes = require('./src/routes/donors');
+const donationsRoutes = require('./src/routes/donations');
 
 const app = express();
 app.use(cors());
@@ -19,6 +20,7 @@ dbService.initialize()
     app.use('/api/lawyers', lawyersRoutes(dbService));
     app.use('/api/osc', oscRoutes(dbService));
     app.use('/api/donors', donorsRoutes(dbService));
+    app.use('/api/donations', donationsRoutes(dbService));
 
     const PORT = process.env.PORT || 3005;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

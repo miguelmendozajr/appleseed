@@ -75,6 +75,17 @@ class DBService {
     
     return result.insertId;
   }
+
+  async getOSCDonations(rfc){
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query(
+      'SELECT * FROM donaciones WHERE rfc_OSC = ?',
+      [rfc]
+    );
+    return rows;
+  }
 }
   
 module.exports = DBService;
