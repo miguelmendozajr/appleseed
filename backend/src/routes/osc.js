@@ -7,7 +7,9 @@ module.exports = (dbService) => {
   const oscController = new OSCController(dbService);
   const oscHandler = new OSCHttpHandler(oscController);
   
+  router.get('/', oscHandler.getAll.bind(oscHandler));
   router.post('/login', oscHandler.login.bind(oscHandler));
+  router.post('/signup', oscHandler.signup.bind(oscHandler));
   
   return router;
 };

@@ -27,7 +27,7 @@ export default function DashboardPage() {
     // Check if user is logged in
     const storedData = localStorage.getItem('osc_data');
     if (!storedData) {
-      router.push('/login');
+      router.push('/osc/login');
       return;
     }
 
@@ -69,7 +69,6 @@ export default function DashboardPage() {
                 <span className="text-[#4A6B6D]">Apple</span>
                 <span className="text-[#8BC34A]">seed</span>
               </span>
-              <p className="ml-4 text-sm text-[#6B9FD4]">Dashboard</p>
             </div>
             <div className="flex items-center space-x-6">
               <div className="text-right">
@@ -88,29 +87,16 @@ export default function DashboardPage() {
       </nav>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Bienvenido, {oscData?.nombre}
-          </h1>
-          <p className="text-gray-600">
-            Panel de control de gestión de donativos
-          </p>
-        </div>
 
         {/* Graphics Section - Placeholder */}
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Estadísticas</h2>
           <div className="grid md:grid-cols-3 gap-6">
             {/* Card 1 */}
             <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-[#8BC34A]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total Donativos</p>
+                  <p className="text-sm text-gray-600 mb-1">Monto acumulado en donativos</p>
                   <p className="text-3xl font-bold text-gray-900">-</p>
-                </div>
-                <div className="w-12 h-12 bg-[#8BC34A] bg-opacity-10 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">💰</span>
                 </div>
               </div>
             </div>
@@ -119,11 +105,8 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-[#4A6B6D]">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Donantes Activos</p>
+                  <p className="text-sm text-gray-600 mb-1">Cantidad de donativos</p>
                   <p className="text-3xl font-bold text-gray-900">-</p>
-                </div>
-                <div className="w-12 h-12 bg-[#4A6B6D] bg-opacity-10 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">👥</span>
                 </div>
               </div>
             </div>
@@ -132,11 +115,8 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Alertas Pendientes</p>
+                  <p className="text-sm text-gray-600 mb-1">Alertas de auditoría</p>
                   <p className="text-3xl font-bold text-gray-900">-</p>
-                </div>
-                <div className="w-12 h-12 bg-yellow-500 bg-opacity-10 rounded-full flex items-center justify-center">
-                  <span className="text-2xl">⚠️</span>
                 </div>
               </div>
             </div>
@@ -154,6 +134,83 @@ export default function DashboardPage() {
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Tipo</h3>
               <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
                 <p className="text-gray-400">Gráfica pendiente</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 py-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Donantes</h2>
+            </div>
+        
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Nombre
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        RFC
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Tipo de donante
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Monto donado en los últimos 6 meses (UMA)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Alertas
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+
+        <div className="mb-8">
+          <div className="bg-white rounded-lg shadow-md p-6 py-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl font-bold text-gray-900">Donaciones</h2>
+            </div>
+        
+            <div className="overflow-hidden rounded-lg border border-gray-200">
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Tipo de donativo
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Monto (UMA)
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        RFC del donante
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Require CFDI
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Archivos
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

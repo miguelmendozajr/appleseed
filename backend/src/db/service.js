@@ -26,14 +26,56 @@ class DBService {
     return rows;
   }
 
-  async loginOSC(rfc) {
+  async getAllOSC(){
+    if (!this.initialized) {
+        throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query('SELECT rfc, nombre, descripcion, logo FROM OSC');
+    return rows;
+  }
+
+  async checkOSC(rfc) {
     if (!this.initialized) {
       throw new Error('Service not initialized');
     }
     const [rows] = await this.connection.query('SELECT * FROM OSC WHERE rfc = ?', [rfc]);
     return rows[0];
   }
+
+  async checkRFCdoners(rfc) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query('SELECT * FROM donantes WHERE rfc = ?', [rfc]);
+    return rows[0];
+  }
+      
+  async createDonor(rfc, nombre, contrasena, tipo_persona) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const [result] = await this.connection.query(
+      'INSERT INTO donantes (rfc, nombre, contrasena, tipo_persona) VALUES (?, ?, ?, ?)', 
+      [rfc, nombre, contrasena, tipo_persona]
+    );
+    
+    return result.insertId;
+  }
+
+  async createOSC(rfc, nombre, contrasena, descripcion) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const [result] = await this.connection.query(
+      'INSERT INTO OSC (rfc, nombre, contrasena, descripcion) VALUES (?, ?, ?, ?)', 
+      [rfc, nombre, contrasena, descripcion]
+    );
+    
+    return result.insertId;
+  }
 }
   
-  module.exports = DBService;
+module.exports = DBService;
   
