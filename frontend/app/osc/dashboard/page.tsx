@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { getOSCDonationsLastSixMonths, Donation } from '../../services/donationService';
 
 interface Lawyer {
   id: number;
@@ -16,12 +18,21 @@ interface OSCData {
   logo?: string;
 }
 
+interface ChartData {
+  month: string;
+  total: number;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [oscData, setOscData] = useState<OSCData | null>(null);
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [donations, setDonations] = useState<Donation[]>([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [stats, setStats] = useState({ totalAmount: 0, totalCount: 0 });
+  const [loadingDonations, setLoadingDonations] = useState(false);
 
   useEffect(() => {
     // Check if user is logged in
@@ -31,11 +42,53 @@ export default function DashboardPage() {
       return;
     }
 
-    setOscData(JSON.parse(storedData));
+    const parsedData = JSON.parse(storedData);
+    setOscData(parsedData);
 
+    loadDonations(parsedData.rfc);
+    
     // Fetch lawyers
     fetchLawyers();
   }, [router]);
+
+  const loadDonations = async (rfc: string) => {
+    try {
+      setLoadingDonations(true);
+      console.log('Cargando donaciones para RFC:', rfc);
+      const data = await getOSCDonationsLastSixMonths(rfc);
+      console.log('Donaciones recibidas:', data);
+    
+      setDonations(data);
+    
+    // Calcular estadísticas
+      const total = data.reduce((sum, d) => sum + parseFloat(d.Monto), 0);
+      setStats({
+        totalAmount: total,
+        totalCount: data.length
+      });
+      const groupedByMonth = data.reduce((acc: Record<string, number>, donation: Donation) => {
+        const date = new Date(donation.Fecha);
+        const monthYear = date.toLocaleString('es-MX', { month: 'short', year: 'numeric' });
+        
+        if (!acc[monthYear]) {
+          acc[monthYear] = 0;
+        }
+        
+        acc[monthYear] += parseFloat(donation.Monto);
+        return acc;
+      }, {});
+      const chartDataArray = Object.entries(groupedByMonth).map(([month, total]) => ({
+        month,
+        total
+      }));
+
+      setChartData(chartDataArray);
+    } catch (error) {
+      console.error('Error cargando donaciones:', error);
+    } finally {
+      setLoadingDonations(false);
+    }
+  };
 
   const fetchLawyers = async () => {
     try {
@@ -125,9 +178,27 @@ export default function DashboardPage() {
           {/* Chart Placeholders */}
           <div className="grid md:grid-cols-2 gap-6 mt-6">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Donaciones por Mes</h3>
-              <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
-                <p className="text-gray-400">Gráfica pendiente</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Donaciones por 6 meses</h3>
+              <div className="h-64">
+                {loadingDonations ? (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">Cargando datos...</p>
+                  </div>
+                ) : chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="month" />
+                      <YAxis />
+                      <Tooltip formatter={(value) => [`$${value}`, 'Monto']} />
+                      <Bar dataKey="total" fill="#8BC34A" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">No hay datos disponibles</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">

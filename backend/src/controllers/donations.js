@@ -8,10 +8,21 @@ class DonationController {
     }
 
     async getOSCDonationsLastSixMonths(rfc) {
-        const donations = await this.service.getOSCDonations(rfc);
-        // TODO: Filter donations from the last 6 months
-
-        return donations;
+       const donations = await this.service.getOSCDonations(rfc);
+    
+        const today = new Date(); // Hoy
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(today.getMonth() - 6);
+    
+        console.log('Hoy:', today);
+        console.log('Hace 6 meses:', sixMonthsAgo);
+    
+        const filteredDonations = donations.filter(donation => {
+            const donationDate = new Date(donation.Fecha); 
+            return donationDate >= sixMonthsAgo;
+        });
+    
+        return filteredDonations;
     }
 }
   

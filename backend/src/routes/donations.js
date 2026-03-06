@@ -7,6 +7,6 @@ module.exports = (dbService) => {
   const donationController = new DonationController(dbService);
   const donationHandler = new DonationHttpHandler(donationController);
   router.get('/osc', donationHandler.getOSCDonations.bind(donationHandler));
-  router.get('/osc/last-six-months', donationHandler.getOSCDonationsLastSixMonths.bind(donationHandler));
+  router.post('/osc/last-six-months', donationHandler.getOSCDonationsLastSixMonths.bind(donationHandler));
   return router;
 };
