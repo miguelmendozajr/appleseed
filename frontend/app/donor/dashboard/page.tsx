@@ -15,6 +15,24 @@ interface DonorData {
   nombre: string;
   rfc: string;
   tipo_persona?: string;
+  CFDI?: string | null;
+  codigo_postal_fiscal?: string | null;
+  regimen_fiscal?: string | null;
+  calle?: string | null;
+  numero_exterior?: string | null;
+  colonia?: string | null;
+  municipio?: string | null;
+  estado?: string | null;
+  curp?: string | null;
+  identificacion?: string | null;
+  comprobante_domicilio?: string | null;
+  declaracion_beneficiario_controlador?: string | null;
+  acta_constitutiva?: string | null;
+  poderes_legales?: string | null;
+  correo_electronico?: string | null;
+  constancia_situacion_fiscal?: string | null;
+  telefono?: string | null;
+  donadoSeisMeses?: number;
 }
 
 export default function DonorsPage() {
@@ -147,6 +165,14 @@ export default function DonorsPage() {
     setIsModalOpen(true);
   };
 
+  // Helper function to extract URL from state (handles both string and object formats)
+  const getUrlString = (value: string): string => {
+    if (!value) return '';
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const anyValue = value as any;
+    return typeof anyValue === 'object' && anyValue.url ? anyValue.url : value;
+  };
+
   // Upload file to S3 immediately when selected
   const handleFileUpload = async (file: File, setUrlState: (url: string) => void, setFileNameState: (name: string) => void) => {
     if (!file) return;
@@ -261,19 +287,19 @@ export default function DonorsPage() {
         
         // Add file URLs
         if (actaConstitutiva) {
-          payload.actaConstitutiva = actaConstitutiva;
+          payload.actaConstitutiva = getUrlString(actaConstitutiva);
         }
         if (poderRepresentanteLegal) {
-          payload.poderRepresentanteLegal = poderRepresentanteLegal;
+          payload.poderRepresentanteLegal = getUrlString(poderRepresentanteLegal);
         }
         if (identificacionRepresentante) {
-          payload.identificacionRepresentante = identificacionRepresentante;
+          payload.identificacionRepresentante = getUrlString(identificacionRepresentante);
         }
         if (constanciaSituacionFiscalMoral) {
-          payload.constanciaSituacionFiscal = constanciaSituacionFiscalMoral;
+          payload.constanciaSituacionFiscal = getUrlString(constanciaSituacionFiscalMoral);
         }
         if (comprobanteDomicilioFiscalMoral) {
-          payload.comprobanteDomicilio = comprobanteDomicilioFiscalMoral;
+          payload.comprobanteDomicilio = getUrlString(comprobanteDomicilioFiscalMoral);
         }
       } else if (donorData?.tipo_persona === 'fisica') {
         payload.curp = curp;
@@ -281,29 +307,29 @@ export default function DonorsPage() {
         
         // Add file URLs
         if (identificacionVigente) {
-          payload.identificacion = identificacionVigente;
+          payload.identificacion = getUrlString(identificacionVigente);
         }
         if (constanciaSituacionFiscalFisica) {
-          payload.constanciaSituacionFiscal = constanciaSituacionFiscalFisica;
+          payload.constanciaSituacionFiscal = getUrlString(constanciaSituacionFiscalFisica);
         }
         if (comprobanteDomicilioFisica) {
-          payload.comprobanteDomicilio = comprobanteDomicilioFisica;
+          payload.comprobanteDomicilio = getUrlString(comprobanteDomicilioFisica);
         }
       }
       
       // Donation type specific file URLs
       if (tipoDonacion === 'especie') {
         if (cartaDonacion) {
-          payload.cartaDonacion = cartaDonacion;
+          payload.cartaDonacion = getUrlString(cartaDonacion);
         }
         
         const valorNum = parseFloat(valorEstimado);
         if (valorNum >= 189000) {
           if (documentoPropiedadEspecie) {
-            payload.documentoPropiedad = documentoPropiedadEspecie;
+            payload.documentoPropiedad = getUrlString(documentoPropiedadEspecie);
           }
           if (documentoValorEspecie) {
-            payload.documentoValor = documentoValorEspecie;
+            payload.documentoValor = getUrlString(documentoValorEspecie);
           }
         }
       }
@@ -312,10 +338,10 @@ export default function DonorsPage() {
       const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
       if (montoNumerico >= 189000) {
         if (declaracionOrigenRecursos) {
-          payload.declaracionOrigenRecursos = declaracionOrigenRecursos;
+          payload.declaracionOrigenRecursos = getUrlString(declaracionOrigenRecursos);
         }
         if (donorData?.tipo_persona === 'moral' && identificacionBeneficiarioControlador) {
-          payload.identificacionBeneficiarioControlador = identificacionBeneficiarioControlador;
+          payload.identificacionBeneficiarioControlador = getUrlString(identificacionBeneficiarioControlador);
         }
       }
       
@@ -335,6 +361,43 @@ export default function DonorsPage() {
       
       const result = await response.json();
       console.log('Donation created:', result);
+      
+      // Update localStorage with new donor data
+      const updatedDonorData: DonorData = {
+        nombre: donorData?.nombre || '',
+        rfc: donorData?.rfc || '',
+        tipo_persona: donorData?.tipo_persona,
+        calle,
+        numero_exterior: numeroExterior,
+        colonia,
+        municipio,
+        estado,
+        codigo_postal_fiscal: codigoPostal,
+      };
+
+      // Add person-specific fields
+      if (donorData?.tipo_persona === 'moral') {
+        updatedDonorData.acta_constitutiva = getUrlString(actaConstitutiva);
+        updatedDonorData.poderes_legales = getUrlString(poderRepresentanteLegal);
+        updatedDonorData.identificacion = getUrlString(identificacionRepresentante);
+        updatedDonorData.constancia_situacion_fiscal = getUrlString(constanciaSituacionFiscalMoral);
+        updatedDonorData.comprobante_domicilio = getUrlString(comprobanteDomicilioFiscalMoral);
+        if (identificacionBeneficiarioControlador) {
+          updatedDonorData.declaracion_beneficiario_controlador = getUrlString(identificacionBeneficiarioControlador);
+        }
+      } else if (donorData?.tipo_persona === 'fisica') {
+        updatedDonorData.curp = curp;
+        updatedDonorData.regimen_fiscal = regimenFiscal;
+        updatedDonorData.identificacion = getUrlString(identificacionVigente);
+        updatedDonorData.constancia_situacion_fiscal = getUrlString(constanciaSituacionFiscalFisica);
+        updatedDonorData.comprobante_domicilio = getUrlString(comprobanteDomicilioFisica);
+      }
+
+      // Save to localStorage
+      localStorage.setItem('donor_data', JSON.stringify(updatedDonorData));
+      
+      // Update state
+      setDonorData(updatedDonorData);
       
       // Close modal after successful submission
       closeModal();

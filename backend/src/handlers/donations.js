@@ -36,9 +36,10 @@ class DonationHttpHandler {
 
     async createDonation(req, res) {
       try {
-        await this.donationController.createDonation(req.body);
-        res.json({ message: 'Donation received successfully' });
+        const result = await this.donationController.createDonation(req.body);
+        res.json(result);
       } catch (error) {
+        console.error('Error creating donation:', error);
         res.status(500).json({ error: error.message });
       }      
 

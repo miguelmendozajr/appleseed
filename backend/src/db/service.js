@@ -97,6 +97,71 @@ class DBService {
     );
     return rows;
   }
+
+  async updateDonor(rfc, updateData) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const fields = [];
+    const values = [];
+    
+    // Build dynamic UPDATE query based on provided fields
+    Object.keys(updateData).forEach(key => {
+      if (updateData[key] !== undefined && updateData[key] !== null) {
+        fields.push(`${key} = ?`);
+        values.push(updateData[key]);
+      }
+    });
+    
+    if (fields.length === 0) {
+      return; // Nothing to update
+    }
+    
+    values.push(rfc); // Add RFC for WHERE clause
+    
+    const query = `UPDATE donantes SET ${fields.join(', ')} WHERE rfc = ?`;
+    const [result] = await this.connection.query(query, values);
+    
+    return result;
+  }
+
+  async createDonation(donationData) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const [result] = await this.connection.query(
+      `INSERT INTO donaciones (
+        Monto,
+        Fecha,
+        Necesita_CFDI,
+        Tipo,
+        Valor_estimado,
+        rfc_donantes,
+        rfc_OSC,
+        Declaracion_Origen_Recursos,
+        Carta_De_Donacion,
+        Acreditacion_Propiedad,
+        Acreditacion_Valir_Propiedad
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        donationData.monto || null,
+        donationData.fecha,
+        donationData.necesitaCFDI ? 1 : 0,
+        donationData.tipo,
+        donationData.valorEstimado || null,
+        donationData.rfc_donantes,
+        donationData.rfc_osc,
+        donationData.declaracionOrigenRecursos || null,
+        donationData.cartaDonacion || null,
+        donationData.acreditacionPropiedad || null,
+        donationData.acreditacionValorPropiedad || null
+      ]
+    );
+    
+    return result.insertId;
+  }
 }
   
 module.exports = DBService;
