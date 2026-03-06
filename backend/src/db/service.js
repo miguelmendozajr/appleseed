@@ -86,6 +86,17 @@ class DBService {
     );
     return rows;
   }
+
+  async getDonorDonations(rfc){
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query(
+      'SELECT * FROM donaciones WHERE rfc_donantes = ?',
+      [rfc]
+    );
+    return rows;
+  }
 }
   
 module.exports = DBService;

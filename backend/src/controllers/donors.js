@@ -10,7 +10,7 @@ class DonorController {
     }
 
     await this.service.createDonor(rfc, nombre, contrasena, tipo_persona);
-    return { rfc, nombre, tipo_persona };
+    return { rfc, nombre, tipo_persona, donadoSeisMeses: 0 };
   }
 
   async login(rfc, contrasena) {
@@ -19,7 +19,17 @@ class DonorController {
         throw new Error('RFC o contraseña incorrectos');
     }
     const { contrasena: _, ...donerData } = doner;
-    return donerData;
+    const donations = await this.service.getDonorDonations(rfc);
+    let amount = 0;
+    for (const donation of donations) {
+      if (donation.tipo_donacion == 'especie') {
+        amount += parseFloat(donation.Valor_estimado);
+      } else {
+        amount += parseFloat(donation.Monto);
+      }
+    }
+
+    return { ...donerData, donadoSeisMeses: amount};
   }
 }
 
