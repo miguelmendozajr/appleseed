@@ -1,6 +1,7 @@
 class DonationController {
-    constructor(service) {
+    constructor(service, s3Service) {
       this.service = service;
+      this.s3Service = s3Service;
     }
     async getOSCDonations(rfc) {
         const donations = await this.service.getOSCDonations(rfc);
@@ -13,6 +14,16 @@ class DonationController {
 
         return donations;
     }
+
+    async submitFile(file) {
+        const result = await this.s3Service.uploadFile(file);
+        return result;
+    }
+
+    async createDonation(donationData) {
+        
+    }
+    
 }
   
 module.exports = DonationController;

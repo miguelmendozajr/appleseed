@@ -30,31 +30,40 @@ export default function DonorsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOSC, setSelectedOSC] = useState<OSC | null>(null);
   const [monto, setMonto] = useState('');
-  const [metodoPago, setMetodoPago] = useState('');
   const [tipoDonacion, setTipoDonacion] = useState('');
-  const [referenciaBancaria, setReferenciaBancaria] = useState('');
   const [necesitaCFDI, setNecesitaCFDI] = useState(false);
   
   // Campos específicos por tipo de donativo
   const [valorEstimado, setValorEstimado] = useState('');
-  const [cartaDonacion, setCartaDonacion] = useState<File | null>(null);
-  const [documentoPropiedadEspecie, setDocumentoPropiedadEspecie] = useState<File | null>(null);
-  const [documentoValorEspecie, setDocumentoValorEspecie] = useState<File | null>(null);
+  const [cartaDonacion, setCartaDonacion] = useState('');
+  const [cartaDonacionFileName, setCartaDonacionFileName] = useState('');
+  const [documentoPropiedadEspecie, setDocumentoPropiedadEspecie] = useState('');
+  const [documentoPropiedadEspecieFileName, setDocumentoPropiedadEspecieFileName] = useState('');
+  const [documentoValorEspecie, setDocumentoValorEspecie] = useState('');
+  const [documentoValorEspecieFileName, setDocumentoValorEspecieFileName] = useState('');
   
   // Campos para Persona Moral
   const [nombreRepresentanteLegal, setNombreRepresentanteLegal] = useState('');
-  const [actaConstitutiva, setActaConstitutiva] = useState<File | null>(null);
-  const [poderRepresentanteLegal, setPoderRepresentanteLegal] = useState<File | null>(null);
-  const [identificacionRepresentante, setIdentificacionRepresentante] = useState<File | null>(null);
-  const [constanciaSituacionFiscalMoral, setConstanciaSituacionFiscalMoral] = useState<File | null>(null);
-  const [comprobanteDomicilioFiscalMoral, setComprobanteDomicilioFiscalMoral] = useState<File | null>(null);
+  const [actaConstitutiva, setActaConstitutiva] = useState('');
+  const [actaConstitutivaFileName, setActaConstitutivaFileName] = useState('');
+  const [poderRepresentanteLegal, setPoderRepresentanteLegal] = useState('');
+  const [poderRepresentanteLegalFileName, setPoderRepresentanteLegalFileName] = useState('');
+  const [identificacionRepresentante, setIdentificacionRepresentante] = useState('');
+  const [identificacionRepresentanteFileName, setIdentificacionRepresentanteFileName] = useState('');
+  const [constanciaSituacionFiscalMoral, setConstanciaSituacionFiscalMoral] = useState('');
+  const [constanciaSituacionFiscalMoralFileName, setConstanciaSituacionFiscalMoralFileName] = useState('');
+  const [comprobanteDomicilioFiscalMoral, setComprobanteDomicilioFiscalMoral] = useState('');
+  const [comprobanteDomicilioFiscalMoralFileName, setComprobanteDomicilioFiscalMoralFileName] = useState('');
   
   // Campos para Persona Física
   const [curp, setCurp] = useState('');
   const [regimenFiscal, setRegimenFiscal] = useState('');
-  const [identificacionVigente, setIdentificacionVigente] = useState<File | null>(null);
-  const [constanciaSituacionFiscalFisica, setConstanciaSituacionFiscalFisica] = useState<File | null>(null);
-  const [comprobanteDomicilioFisica, setComprobanteDomicilioFisica] = useState<File | null>(null);
+  const [identificacionVigente, setIdentificacionVigente] = useState('');
+  const [identificacionVigenteFileName, setIdentificacionVigenteFileName] = useState('');
+  const [constanciaSituacionFiscalFisica, setConstanciaSituacionFiscalFisica] = useState('');
+  const [constanciaSituacionFiscalFisicaFileName, setConstanciaSituacionFiscalFisicaFileName] = useState('');
+  const [comprobanteDomicilioFisica, setComprobanteDomicilioFisica] = useState('');
+  const [comprobanteDomicilioFisicaFileName, setComprobanteDomicilioFisicaFileName] = useState('');
   
   // Campos de dirección (compartidos por ambos tipos)
   const [calle, setCalle] = useState('');
@@ -65,8 +74,13 @@ export default function DonorsPage() {
   const [codigoPostal, setCodigoPostal] = useState('');
   
   // Documentos para montos >= 189,000
-  const [declaracionOrigenRecursos, setDeclaracionOrigenRecursos] = useState<File | null>(null);
-  const [identificacionBeneficiarioControlador, setIdentificacionBeneficiarioControlador] = useState<File | null>(null);
+  const [declaracionOrigenRecursos, setDeclaracionOrigenRecursos] = useState('');
+  const [declaracionOrigenRecursosFileName, setDeclaracionOrigenRecursosFileName] = useState('');
+  const [identificacionBeneficiarioControlador, setIdentificacionBeneficiarioControlador] = useState('');
+  const [identificacionBeneficiarioControladorFileName, setIdentificacionBeneficiarioControladorFileName] = useState('');
+  
+  // Upload state
+  const [uploadingFile, setUploadingFile] = useState(false);
 
   useEffect(() => {
     // Check if donor is logged in (placeholder - you'll need to implement donor login)
@@ -79,6 +93,16 @@ export default function DonorsPage() {
     
     const parsedData = JSON.parse(storedData);
     setDonorData(parsedData);
+    
+    // Set default values from localStorage if they exist
+    if (parsedData.calle) setCalle(parsedData.calle);
+    if (parsedData.numero_exterior) setNumeroExterior(parsedData.numero_exterior);
+    if (parsedData.colonia) setColonia(parsedData.colonia);
+    if (parsedData.municipio) setMunicipio(parsedData.municipio);
+    if (parsedData.estado) setEstado(parsedData.estado);
+    if (parsedData.codigo_postal_fiscal) setCodigoPostal(parsedData.codigo_postal_fiscal);
+    if (parsedData.curp) setCurp(parsedData.curp);
+    if (parsedData.regimen_fiscal) setRegimenFiscal(parsedData.regimen_fiscal);
     
     // Fetch OSCs
     fetchOSCs();
@@ -123,33 +147,72 @@ export default function DonorsPage() {
     setIsModalOpen(true);
   };
 
+  // Upload file to S3 immediately when selected
+  const handleFileUpload = async (file: File, setUrlState: (url: string) => void, setFileNameState: (name: string) => void) => {
+    if (!file) return;
+    
+    setUploadingFile(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/donations/submit-file`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al subir archivo');
+      }
+
+      const data = await response.json();
+      setUrlState(data.url);
+      setFileNameState(file.name);
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      alert(`Error al subir archivo: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   const closeModal = () => {
     setIsModalOpen(false);
     setSelectedOSC(null);
     setMonto('');
-    setMetodoPago('');
     setTipoDonacion('');
-    setReferenciaBancaria('');
     setNecesitaCFDI(false);
     setValorEstimado('');
-    setCartaDonacion(null);
-    setDocumentoPropiedadEspecie(null);
-    setDocumentoValorEspecie(null);
+    setCartaDonacion('');
+    setCartaDonacionFileName('');
+    setDocumentoPropiedadEspecie('');
+    setDocumentoPropiedadEspecieFileName('');
+    setDocumentoValorEspecie('');
+    setDocumentoValorEspecieFileName('');
     
     // Resetear campos de Persona Moral
     setNombreRepresentanteLegal('');
-    setActaConstitutiva(null);
-    setPoderRepresentanteLegal(null);
-    setIdentificacionRepresentante(null);
-    setConstanciaSituacionFiscalMoral(null);
-    setComprobanteDomicilioFiscalMoral(null);
+    setActaConstitutiva('');
+    setActaConstitutivaFileName('');
+    setPoderRepresentanteLegal('');
+    setPoderRepresentanteLegalFileName('');
+    setIdentificacionRepresentante('');
+    setIdentificacionRepresentanteFileName('');
+    setConstanciaSituacionFiscalMoral('');
+    setConstanciaSituacionFiscalMoralFileName('');
+    setComprobanteDomicilioFiscalMoral('');
+    setComprobanteDomicilioFiscalMoralFileName('');
     
     // Resetear campos de Persona Física
     setCurp('');
     setRegimenFiscal('');
-    setIdentificacionVigente(null);
-    setConstanciaSituacionFiscalFisica(null);
-    setComprobanteDomicilioFisica(null);
+    setIdentificacionVigente('');
+    setIdentificacionVigenteFileName('');
+    setConstanciaSituacionFiscalFisica('');
+    setConstanciaSituacionFiscalFisicaFileName('');
+    setComprobanteDomicilioFisica('');
+    setComprobanteDomicilioFisicaFileName('');
     
     // Resetear campos de dirección
     setCalle('');
@@ -160,20 +223,129 @@ export default function DonorsPage() {
     setCodigoPostal('');
     
     // Resetear documentos para montos >= 189,000
-    setDeclaracionOrigenRecursos(null);
-    setIdentificacionBeneficiarioControlador(null);
+    setDeclaracionOrigenRecursos('');
+    setDeclaracionOrigenRecursosFileName('');
+    setIdentificacionBeneficiarioControlador('');
+    setIdentificacionBeneficiarioControladorFileName('');
   };
 
-  const handleSubmitDonation = (e: React.FormEvent) => {
+  const handleSubmitDonation = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    
-   
-    // Close modal after submission
-    closeModal();
-    
-    // Show success message (you can add a toast notification here)
-    alert('¡Donación registrada exitosamente!');
+    try {
+      // Build the JSON payload
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const payload: Record<string, any> = {
+        tipoDonacion,
+        rfc_donador: donorData?.rfc || '',
+        rfc_osc: selectedOSC?.rfc || '',
+        necesitaCFDI,
+        calle,
+        numeroExterior,
+        colonia,
+        municipio,
+        estado,
+        codigoPostal,
+      };
+      
+      // Amount fields (conditional based on donation type)
+      if (tipoDonacion === 'especie') {
+        payload.valorEstimado = parseFloat(valorEstimado);
+      } else {
+        payload.monto = parseFloat(monto);
+      }
+      
+      // Person type specific data and file URLs
+      if (donorData?.tipo_persona === 'moral') {
+        payload.nombreRepresentanteLegal = nombreRepresentanteLegal;
+        
+        // Add file URLs
+        if (actaConstitutiva) {
+          payload.actaConstitutiva = actaConstitutiva;
+        }
+        if (poderRepresentanteLegal) {
+          payload.poderRepresentanteLegal = poderRepresentanteLegal;
+        }
+        if (identificacionRepresentante) {
+          payload.identificacionRepresentante = identificacionRepresentante;
+        }
+        if (constanciaSituacionFiscalMoral) {
+          payload.constanciaSituacionFiscal = constanciaSituacionFiscalMoral;
+        }
+        if (comprobanteDomicilioFiscalMoral) {
+          payload.comprobanteDomicilio = comprobanteDomicilioFiscalMoral;
+        }
+      } else if (donorData?.tipo_persona === 'fisica') {
+        payload.curp = curp;
+        payload.regimenFiscal = regimenFiscal;
+        
+        // Add file URLs
+        if (identificacionVigente) {
+          payload.identificacion = identificacionVigente;
+        }
+        if (constanciaSituacionFiscalFisica) {
+          payload.constanciaSituacionFiscal = constanciaSituacionFiscalFisica;
+        }
+        if (comprobanteDomicilioFisica) {
+          payload.comprobanteDomicilio = comprobanteDomicilioFisica;
+        }
+      }
+      
+      // Donation type specific file URLs
+      if (tipoDonacion === 'especie') {
+        if (cartaDonacion) {
+          payload.cartaDonacion = cartaDonacion;
+        }
+        
+        const valorNum = parseFloat(valorEstimado);
+        if (valorNum >= 189000) {
+          if (documentoPropiedadEspecie) {
+            payload.documentoPropiedad = documentoPropiedadEspecie;
+          }
+          if (documentoValorEspecie) {
+            payload.documentoValor = documentoValorEspecie;
+          }
+        }
+      }
+      
+      // Documents for amounts >= 189,000
+      const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
+      if (montoNumerico >= 189000) {
+        if (declaracionOrigenRecursos) {
+          payload.declaracionOrigenRecursos = declaracionOrigenRecursos;
+        }
+        if (donorData?.tipo_persona === 'moral' && identificacionBeneficiarioControlador) {
+          payload.identificacionBeneficiarioControlador = identificacionBeneficiarioControlador;
+        }
+      }
+      
+      // Send POST request with JSON
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/donations`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al registrar la donación');
+      }
+      
+      const result = await response.json();
+      console.log('Donation created:', result);
+      
+      // Close modal after successful submission
+      closeModal();
+      
+      // Show success message
+      alert('¡Donación registrada exitosamente!');
+      
+    } catch (error) {
+      console.error('Error submitting donation:', error);
+      alert(`Error al registrar la donación: ${error instanceof Error ? error.message : 'Error desconocido'}`);
+    }
   };
 
   // Validar si el formulario está completo
@@ -189,11 +361,11 @@ export default function DonorsPage() {
       const valorNumerico = parseFloat(valorEstimado);
       isBasicValid = valorEstimado.trim() !== '' && 
              valorNumerico > 0 &&
-             cartaDonacion !== null;
+             cartaDonacion !== '';
       
       // Si el valor es mayor a 189,000, validar documentos adicionales
-      if (isBasicValid && valorNumerico > 189000) {
-        isBasicValid = documentoPropiedadEspecie !== null && documentoValorEspecie !== null;
+      if (isBasicValid && valorNumerico >= 189000) {
+        isBasicValid = documentoPropiedadEspecie !== '' && documentoValorEspecie !== '';
       }
     } else if (tipoDonacion === 'transferencia') {
       isBasicValid = monto.trim() !== '' && parseFloat(monto) > 0;
@@ -216,24 +388,24 @@ export default function DonorsPage() {
     // Validar documentos adicionales si el monto >= 189,000
     const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
     if (montoNumerico >= 189000) {
-      if (declaracionOrigenRecursos === null) return false;
-      if (donorData?.tipo_persona === 'moral' && identificacionBeneficiarioControlador === null) return false;
+      if (declaracionOrigenRecursos === '') return false;
+      if (donorData?.tipo_persona === 'moral' && identificacionBeneficiarioControlador === '') return false;
     }
     
     // Validar campos específicos según tipo de persona
     if (donorData?.tipo_persona === 'moral') {
       return nombreRepresentanteLegal.trim() !== '' &&
-             actaConstitutiva !== null &&
-             poderRepresentanteLegal !== null &&
-             identificacionRepresentante !== null &&
-             constanciaSituacionFiscalMoral !== null &&
-             comprobanteDomicilioFiscalMoral !== null;
+             actaConstitutiva !== '' &&
+             poderRepresentanteLegal !== '' &&
+             identificacionRepresentante !== '' &&
+             constanciaSituacionFiscalMoral !== '' &&
+             comprobanteDomicilioFiscalMoral !== '';
     } else if (donorData?.tipo_persona === 'fisica') {
       return curp.trim() !== '' &&
              regimenFiscal.trim() !== '' &&
-             identificacionVigente !== null &&
-             constanciaSituacionFiscalFisica !== null &&
-             comprobanteDomicilioFisica !== null;
+             identificacionVigente !== '' &&
+             constanciaSituacionFiscalFisica !== '' &&
+             comprobanteDomicilioFisica !== '';
     }
     
     return false;
@@ -457,7 +629,7 @@ export default function DonorsPage() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Carta de Donación
+                      Carta de Donación {uploadingFile && '(Subiendo...)'}
                     </label>
                     <div className="relative">
                       <input
@@ -465,7 +637,10 @@ export default function DonorsPage() {
                         id="cartaDonacion"
                         required
                         accept=".pdf,image/*"
-                        onChange={(e) => setCartaDonacion(e.target.files?.[0] || null)}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleFileUpload(file, setCartaDonacion, setCartaDonacionFileName);
+                        }}
                         className="hidden"
                       />
                       <label
@@ -473,7 +648,7 @@ export default function DonorsPage() {
                         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                       >
                         <span className="text-sm text-gray-600">
-                          {cartaDonacion ? cartaDonacion.name : 'Seleccionar archivo...'}
+                          {cartaDonacionFileName || 'Seleccionar archivo...'}
                         </span>
                       </label>
                     </div>
@@ -484,7 +659,7 @@ export default function DonorsPage() {
                     <>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Documento que Acredite la Propiedad
+                          Documento que Acredite la Propiedad {uploadingFile && '(Subiendo...)'}
                         </label>
                         <div className="relative">
                           <input
@@ -492,7 +667,10 @@ export default function DonorsPage() {
                             id="documentoPropiedadEspecie"
                             required
                             accept=".pdf,image/*"
-                            onChange={(e) => setDocumentoPropiedadEspecie(e.target.files?.[0] || null)}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setDocumentoPropiedadEspecie, setDocumentoPropiedadEspecieFileName);
+                            }}
                             className="hidden"
                           />
                           <label
@@ -500,7 +678,7 @@ export default function DonorsPage() {
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                           >
                             <span className="text-sm text-gray-600">
-                              {documentoPropiedadEspecie ? documentoPropiedadEspecie.name : 'Seleccionar archivo...'}
+                              {documentoPropiedadEspecieFileName || 'Seleccionar archivo...'}
                             </span>
                           </label>
                         </div>
@@ -508,7 +686,7 @@ export default function DonorsPage() {
 
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
-                          Documento que Acredite el Valor de la Propiedad
+                          Documento que Acredite el Valor de la Propiedad {uploadingFile && '(Subiendo...)'}
                         </label>
                         <div className="relative">
                           <input
@@ -516,7 +694,10 @@ export default function DonorsPage() {
                             id="documentoValorEspecie"
                             required
                             accept=".pdf,image/*"
-                            onChange={(e) => setDocumentoValorEspecie(e.target.files?.[0] || null)}
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setDocumentoValorEspecie, setDocumentoValorEspecieFileName);
+                            }}
                             className="hidden"
                           />
                           <label
@@ -524,7 +705,7 @@ export default function DonorsPage() {
                             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                           >
                             <span className="text-sm text-gray-600">
-                              {documentoValorEspecie ? documentoValorEspecie.name : 'Seleccionar archivo...'}
+                              {documentoValorEspecieFileName || 'Seleccionar archivo...'}
                             </span>
                           </label>
                         </div>
@@ -535,7 +716,7 @@ export default function DonorsPage() {
                   {parseFloat(valorEstimado) >= 189000 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos
+                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
                       <div className="relative">
                         <input
@@ -543,7 +724,10 @@ export default function DonorsPage() {
                           id="declaracionOrigenRecursosEspecie"
                           required
                           accept=".pdf,image/*"
-                          onChange={(e) => setDeclaracionOrigenRecursos(e.target.files?.[0] || null)}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                          }}
                           className="hidden"
                         />
                         <label
@@ -551,7 +735,7 @@ export default function DonorsPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                         >
                           <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursos ? declaracionOrigenRecursos.name : 'Seleccionar archivo...'}
+                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
                           </span>
                         </label>
                       </div>
@@ -586,7 +770,7 @@ export default function DonorsPage() {
                   {parseFloat(monto) >= 189000 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos
+                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
                       <div className="relative">
                         <input
@@ -594,7 +778,10 @@ export default function DonorsPage() {
                           id="declaracionOrigenRecursosTransferencia"
                           required
                           accept=".pdf,image/*"
-                          onChange={(e) => setDeclaracionOrigenRecursos(e.target.files?.[0] || null)}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                          }}
                           className="hidden"
                         />
                         <label
@@ -602,7 +789,7 @@ export default function DonorsPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                         >
                           <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursos ? declaracionOrigenRecursos.name : 'Seleccionar archivo...'}
+                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
                           </span>
                         </label>
                       </div>
@@ -637,7 +824,7 @@ export default function DonorsPage() {
                   {parseFloat(monto) >= 189000 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos
+                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
                       <div className="relative">
                         <input
@@ -645,7 +832,10 @@ export default function DonorsPage() {
                           id="declaracionOrigenRecursosEfectivo"
                           required
                           accept=".pdf,image/*"
-                          onChange={(e) => setDeclaracionOrigenRecursos(e.target.files?.[0] || null)}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                          }}
                           className="hidden"
                         />
                         <label
@@ -653,7 +843,7 @@ export default function DonorsPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                         >
                           <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursos ? declaracionOrigenRecursos.name : 'Seleccionar archivo...'}
+                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
                           </span>
                         </label>
                       </div>
@@ -688,7 +878,7 @@ export default function DonorsPage() {
                   {parseFloat(monto) >= 189000 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos
+                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
                       <div className="relative">
                         <input
@@ -696,7 +886,10 @@ export default function DonorsPage() {
                           id="declaracionOrigenRecursosCheque"
                           required
                           accept=".pdf,image/*"
-                          onChange={(e) => setDeclaracionOrigenRecursos(e.target.files?.[0] || null)}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                          }}
                           className="hidden"
                         />
                         <label
@@ -704,7 +897,7 @@ export default function DonorsPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                         >
                           <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursos ? declaracionOrigenRecursos.name : 'Seleccionar archivo...'}
+                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
                           </span>
                         </label>
                       </div>
@@ -820,7 +1013,7 @@ export default function DonorsPage() {
               {tipoDonacion && donorData?.tipo_persona === 'moral' && (
                 <>
                   <div className="pt-4 border-t border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos del Representante Legal</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos adicionales</h3>
                   </div>
 
                   <div>
@@ -841,14 +1034,17 @@ export default function DonorsPage() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Acta Constitutiva
+                      Acta Constitutiva {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="actaConstitutiva"
                       required
                       accept=".pdf"
-                      onChange={(e) => setActaConstitutiva(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setActaConstitutiva, setActaConstitutivaFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -856,21 +1052,24 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {actaConstitutiva ? actaConstitutiva.name : 'Seleccionar PDF...'}
+                        {actaConstitutivaFileName || 'Seleccionar PDF...'}
                       </span>
                     </label>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Poder del Representante Legal
+                      Poder del Representante Legal {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="poderRepresentanteLegal"
                       required
                       accept=".pdf"
-                      onChange={(e) => setPoderRepresentanteLegal(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setPoderRepresentanteLegal, setPoderRepresentanteLegalFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -878,21 +1077,24 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {poderRepresentanteLegal ? poderRepresentanteLegal.name : 'Seleccionar PDF...'}
+                        {poderRepresentanteLegalFileName || 'Seleccionar PDF...'}
                       </span>
                     </label>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Identificación Oficial del Representante
+                      Identificación Oficial del Representante {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="identificacionRepresentante"
                       required
                       accept="image/*,.pdf"
-                      onChange={(e) => setIdentificacionRepresentante(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setIdentificacionRepresentante, setIdentificacionRepresentanteFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -900,21 +1102,24 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {identificacionRepresentante ? identificacionRepresentante.name : 'Seleccionar archivo...'}
+                        {identificacionRepresentanteFileName || 'Seleccionar archivo...'}
                       </span>
                     </label>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Constancia de Situación Fiscal
+                      Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="constanciaSituacionFiscalMoral"
                       required
                       accept=".pdf"
-                      onChange={(e) => setConstanciaSituacionFiscalMoral(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setConstanciaSituacionFiscalMoral, setConstanciaSituacionFiscalMoralFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -922,21 +1127,24 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {constanciaSituacionFiscalMoral ? constanciaSituacionFiscalMoral.name : 'Seleccionar PDF...'}
+                        {constanciaSituacionFiscalMoralFileName || 'Seleccionar PDF...'}
                       </span>
                     </label>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Comprobante de Domicilio Fiscal
+                      Comprobante de Domicilio Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="comprobanteDomicilioFiscalMoral"
                       required
                       accept="image/*,.pdf"
-                      onChange={(e) => setComprobanteDomicilioFiscalMoral(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setComprobanteDomicilioFiscalMoral, setComprobanteDomicilioFiscalMoralFileName);
+                      }}
                       className="hidden" 
                     />
                     <label
@@ -944,7 +1152,7 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {comprobanteDomicilioFiscalMoral ? comprobanteDomicilioFiscalMoral.name : 'Seleccionar archivo...'}
+                        {comprobanteDomicilioFiscalMoralFileName || 'Seleccionar archivo...'}
                       </span>
                     </label>
                   </div>
@@ -955,7 +1163,7 @@ export default function DonorsPage() {
                   })() && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Identificación del Beneficiario Controlador
+                        Identificación del Beneficiario Controlador {uploadingFile && '(Subiendo...)'}
                       </label>
                       <div className="relative">
                         <input
@@ -963,7 +1171,10 @@ export default function DonorsPage() {
                           id="identificacionBeneficiarioControlador"
                           required
                           accept=".pdf,image/*"
-                          onChange={(e) => setIdentificacionBeneficiarioControlador(e.target.files?.[0] || null)}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setIdentificacionBeneficiarioControlador, setIdentificacionBeneficiarioControladorFileName);
+                          }}
                           className="hidden"
                         />
                         <label
@@ -971,7 +1182,7 @@ export default function DonorsPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                         >
                           <span className="text-sm text-gray-600">
-                            {identificacionBeneficiarioControlador ? identificacionBeneficiarioControlador.name : 'Seleccionar archivo...'}
+                            {identificacionBeneficiarioControladorFileName || 'Seleccionar archivo...'}
                           </span>
                         </label>
                       </div>
@@ -1041,14 +1252,17 @@ export default function DonorsPage() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Identificación Vigente (INE o Pasaporte)
+                      Identificación Vigente (INE o Pasaporte) {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="identificacionVigente"
                       required
                       accept="image/*,.pdf"
-                      onChange={(e) => setIdentificacionVigente(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setIdentificacionVigente, setIdentificacionVigenteFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -1056,21 +1270,24 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {identificacionVigente ? identificacionVigente.name : 'Seleccionar archivo...'}
+                        {identificacionVigenteFileName || 'Seleccionar archivo...'}
                       </span>
                     </label>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Constancia de Situación Fiscal
+                      Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="constanciaSituacionFiscalFisica"
                       required
                       accept=".pdf"
-                      onChange={(e) => setConstanciaSituacionFiscalFisica(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setConstanciaSituacionFiscalFisica, setConstanciaSituacionFiscalFisicaFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -1078,21 +1295,24 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {constanciaSituacionFiscalFisica ? constanciaSituacionFiscalFisica.name : 'Seleccionar PDF...'}
+                        {constanciaSituacionFiscalFisicaFileName || 'Seleccionar PDF...'}
                       </span>
                     </label>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Comprobante de Domicilio
+                      Comprobante de Domicilio {uploadingFile && '(Subiendo...)'}
                     </label>
                     <input
                       type="file"
                       id="comprobanteDomicilioFisica"
                       required
                       accept="image/*,.pdf"
-                      onChange={(e) => setComprobanteDomicilioFisica(e.target.files?.[0] || null)}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleFileUpload(file, setComprobanteDomicilioFisica, setComprobanteDomicilioFisicaFileName);
+                      }}
                       className="hidden"
                     />
                     <label
@@ -1100,7 +1320,7 @@ export default function DonorsPage() {
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
                     >
                       <span className="text-sm text-gray-600">
-                        {comprobanteDomicilioFisica ? comprobanteDomicilioFisica.name : 'Seleccionar archivo...'}
+                        {comprobanteDomicilioFisicaFileName || 'Seleccionar archivo...'}
                       </span>
                     </label>
                   </div>
@@ -1135,14 +1355,14 @@ export default function DonorsPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={!isFormValid()}
+                  disabled={!isFormValid() || uploadingFile}
                   className={`flex-1 px-6 py-3 font-bold rounded-lg transition-all duration-300 shadow-lg ${
-                    isFormValid()
+                    isFormValid() && !uploadingFile
                       ? 'bg-gradient-to-r from-[#8BC34A] to-[#7CB342] text-white hover:from-[#7CB342] hover:to-[#689F38] hover:shadow-xl cursor-pointer'
                       : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                   }`}
                 >
-                  Confirmar
+                  {uploadingFile ? 'Subiendo archivo...' : 'Confirmar'}
                 </button>
               </div>
             </form>
