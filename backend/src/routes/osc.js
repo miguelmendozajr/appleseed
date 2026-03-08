@@ -10,6 +10,7 @@ module.exports = (dbService) => {
   router.get('/', oscHandler.getAll.bind(oscHandler));
   router.post('/login', oscHandler.login.bind(oscHandler));
   router.post('/signup', oscHandler.signup.bind(oscHandler));
+  router.get('/:rfc/donors', oscHandler.getOSCDonors.bind(oscHandler));
   
   return router;
 };

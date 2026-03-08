@@ -56,6 +56,16 @@ class OSCHttpHandler {
       res.status(500).json({ success: false, message: error.message });
     }
   }
+
+  async getOSCDonors(req, res) {
+    try {
+      const { rfc } = req.params;
+      const donors = await this.oscController.getOSCDonors(rfc);
+      res.json(donors);
+    } catch (error) {
+      res.status(500).json({ success: false, message: error.message });
+    }
+  }
 }
 
 module.exports = OSCHttpHandler;

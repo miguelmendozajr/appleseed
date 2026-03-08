@@ -16,6 +16,30 @@ interface OSCData {
   logo?: string;
 }
 
+interface Donor {
+  rfc: string;
+  nombre: string;
+  tipo_persona: string;
+  codigo_postal_fiscal: string;
+  regimen_fiscal: string;
+  calle: string;
+  numero_exterior: string;
+  colonia: string;
+  municipio: string;
+  estado: string;
+  curp: string;
+  identificacion: string;
+  comprobante_domicilio: string;
+  declaracion_beneficiario_controlador: string;
+  acta_constitutiva: string;
+  poderes_legales: string;
+  correo_electronico: string;
+  constancia_situacion_fiscal: string;
+  telefono: string;
+  donadoSeisMeses: number;
+  alertas: string[];
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [oscData, setOscData] = useState<OSCData | null>(null);
@@ -23,18 +47,13 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [donaciones, setDonaciones] = useState([]);
-  const [donantesResumen, setDonantesResumen] = useState<Array<{
-    rfc: string;
-    nombre: string;
-    tipo: string;
-    montoTotal: number;
-    donaciones: any[];
-  }>>([]);
   const [loadingDonaciones, setLoadingDonaciones] = useState(true);
   const [stats, setStats] = useState({
     montoTotal: 0,
-    cantidadDonaciones: 0
+    cantidadDonaciones: 0,
+    alertasPDL: 0
   });
+  const [donantes, setDonantes] = useState<Donor[]>([]);
 
   useEffect(() => {
     // Check if user is logged in
@@ -52,6 +71,8 @@ export default function DashboardPage() {
     
     // Fetch donaciones con el RFC de la OSC
     fetchDonaciones(parsedData.rfc);
+    // Fetch donantes para la OSC    
+    fetchDonantes(parsedData.rfc);
   }, [router]);
 
   const fetchLawyers = async () => {
@@ -90,35 +111,17 @@ export default function DashboardPage() {
       setDonaciones(data);
       
       // Calcular estadísticas
-      const total = data.reduce((acc: number, don: any) => {
-        const valor = don.Tipo === 'especie' ? parseFloat(don.Valor_estimado) : parseFloat(don.Monto);
-        return acc + valor;
-      }, 0);
+      let total = 0;
+      for (const donacion of data) {
+        console.log(donacion.Tipo === 'especie' ? parseFloat(donacion.Valor_estimado) : parseFloat(donacion.Monto))
+        total += donacion.Tipo === 'especie' ? parseFloat(donacion.Valor_estimado) : parseFloat(donacion.Monto);
+      }
       
       setStats({
         montoTotal: total,
         cantidadDonaciones: data.length
       });
 
-      // Agrupar por donante para la tabla de donantes
-      const donantesMap = new Map();
-      data.forEach((don: any) => {
-        if (!donantesMap.has(don.rfc_donantes)) {
-          donantesMap.set(don.rfc_donantes, {
-            rfc: don.rfc_donantes,
-            nombre: don.nombre_donante || 'Desconocido',
-            tipo: don.tipo_donante || 'fisica',
-            montoTotal: 0,
-            donaciones: []
-          });
-        }
-        const donante = donantesMap.get(don.rfc_donantes);
-        const valor = don.Tipo === 'especie' ? parseFloat(don.Valor_estimado) : parseFloat(don.Monto);
-        donante.montoTotal += valor;
-        donante.donaciones.push(don);
-      });
-      
-      setDonantesResumen(Array.from(donantesMap.values()));
     } catch (err) {
       console.error('Error fetching donaciones:', err);
       setError('No se pudieron cargar las donaciones');
@@ -126,6 +129,27 @@ export default function DashboardPage() {
       setLoadingDonaciones(false);
     }
   };
+
+  const fetchDonantes = async (rfc: string) => {
+    try {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/osc/${rfc}/donors`);
+      if (!response.ok) {
+        throw new Error('Error al cargar donantes');
+      }
+      const data = await response.json();
+      setDonantes(data);
+      
+      // Contar alertas PDL
+      const pdlCount = data.reduce((count: number, donante: Donor) => {
+        const pdlAlerts = donante.alertas?.filter(a => a.includes('PDL')).length || 0;
+        return count + pdlAlerts;
+      }, 0);
+      
+      setStats(prev => ({ ...prev, alertasPDL: pdlCount }));
+    } catch (err) {
+      console.error('Error fetching donantes:', err);
+    }
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('osc_data');
@@ -190,7 +214,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Alertas de auditoría</p>
-                  <p className="text-3xl font-bold text-gray-900">-</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.alertasPDL}</p>
                 </div>
               </div>
             </div>
@@ -248,14 +272,14 @@ export default function DashboardPage() {
                           Cargando donantes...
                         </td>
                       </tr>
-                    ) : donantesResumen.length === 0 ? (
+                    ) : donantes.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="px-6 py-4 text-center text-gray-500">
                           No hay donantes registrados
                         </td>
                       </tr>
                     ) : (
-                      donantesResumen.map((donante, index) => (
+                      donantes.map((donante, index) => (
                         <tr key={donante.rfc} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {donante.nombre}
@@ -264,13 +288,32 @@ export default function DashboardPage() {
                             {donante.rfc}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {donante.tipo === 'fisica' ? 'Física' : 'Moral'}
+                            {donante.tipo_persona}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${donante.montoTotal.toLocaleString()}
+                            ${donante.donadoSeisMeses.toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className="text-gray-400">-</span>
+                          <td className="px-6 py-4 text-sm">
+                            {donante.alertas && donante.alertas.length > 0 ? (
+                              <div className="flex flex-wrap gap-1">
+                                {donante.alertas.map((alerta, idx) => (
+                                  <span
+                                    key={idx}
+                                    className={
+                                      alerta.includes('PDL')
+                                        ? 'px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium'
+                                        : alerta.includes('efectivo')
+                                        ? 'px-2 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium'
+                                        : 'px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium'
+                                    }
+                                  >
+                                    {alerta}
+                                  </span>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-400">-</span>
+                            )}
                           </td>
                         </tr>
                       ))
@@ -310,7 +353,7 @@ export default function DashboardPage() {
                         RFC del donante
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                        Acciones
+                        CFDI
                       </th>
                     </tr>
                   </thead>
@@ -351,12 +394,9 @@ export default function DashboardPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className="flex gap-2">
-                              <button
-                                onClick={() => {/* TODO: Implementar vista de detalles */}}
-                                className="px-3 py-1.5 bg-[#4A6B6D] text-white rounded-lg hover:bg-[#3A5B5D] hover:cursor-pointer transition-colors text-xs font-medium"
-                              >
-                                Ver detalles
-                              </button>
+                              {!donacion.Necesita_CFDI && (
+                                <span className="text-gray-400">No requerido</span>
+                              )}
                               {!!donacion.Necesita_CFDI && !donacion.CFDI && (
                                 <button
                                   onClick={() => {/* TODO: Implementar subida de CFDI */}}
@@ -364,6 +404,16 @@ export default function DashboardPage() {
                                 >
                                   Subir CFDI
                                 </button>
+                              )}
+                              {donacion.CFDI && (
+                                <a
+                                  href={donacion.CFDI}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-xs font-medium"
+                                >
+                                  Ver CFDI
+                                </a>
                               )}
                               
                             </div>

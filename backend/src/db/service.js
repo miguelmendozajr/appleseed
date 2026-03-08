@@ -87,6 +87,40 @@ class DBService {
     return rows;
   }
 
+  async getOSCDonors(rfc){
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    const [rows] = await this.connection.query(
+      `SELECT 
+        d.rfc,
+        d.nombre,
+        d.tipo_persona,
+        d.codigo_postal_fiscal,
+        d.regimen_fiscal,
+        d.calle,
+        d.numero_exterior,
+        d.colonia,
+        d.municipio,
+        d.estado,
+        d.curp,
+        d.identificacion,
+        d.comprobante_domicilio,
+        d.declaracion_beneficiario_controlador,
+        d.acta_constitutiva,
+        d.poderes_legales,
+        d.correo_electronico,
+        d.constancia_situacion_fiscal,
+        d.telefono
+      FROM donantes d 
+      JOIN donaciones don ON d.rfc = don.rfc_donantes 
+      WHERE don.rfc_OSC = ? 
+      GROUP BY d.rfc`,
+      [rfc]
+    );
+    return rows;
+  }
+
   async getDonorDonations(rfc){
     if (!this.initialized) {
       throw new Error('Service not initialized');
