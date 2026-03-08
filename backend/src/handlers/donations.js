@@ -5,7 +5,7 @@ class DonationHttpHandler {
   
     async getOSCDonations(req, res) {
       try {
-        const { rfc } = req.body;
+        const { rfc } = req.query;
         const donations = await this.donationController.getOSCDonations(rfc);
         res.json(donations);
       } catch (error) {
@@ -15,7 +15,7 @@ class DonationHttpHandler {
 
     async getOSCDonationsLastSixMonths(req, res) {
         try {
-          const { rfc } = req.body;
+          const { rfc } = req.query;
           const donations = await this.donationController.getOSCDonationsLastSixMonths(rfc);
           res.json(donations);
         } catch (error) {

@@ -4,6 +4,7 @@ class DonationController {
       this.s3Service = s3Service;
     }
     async getOSCDonations(rfc) {
+        console.log('Fetching donations for RFC:', rfc);
         const donations = await this.service.getOSCDonations(rfc);
         return donations;
     }
