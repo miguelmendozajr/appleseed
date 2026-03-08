@@ -163,6 +163,49 @@ export default function DonorsPage() {
   const openModal = (osc: OSC) => {
     setSelectedOSC(osc);
     setIsModalOpen(true);
+    
+    // Load existing files from localStorage
+    const storedData = localStorage.getItem('donor_data');
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      
+      // Load person-specific files
+      if (parsedData.tipo_persona === 'moral') {
+        if (parsedData.acta_constitutiva) {
+          setActaConstitutiva(parsedData.acta_constitutiva);
+          setActaConstitutivaFileName('Archivo previamente cargado');
+        }
+        if (parsedData.poderes_legales) {
+          setPoderRepresentanteLegal(parsedData.poderes_legales);
+          setPoderRepresentanteLegalFileName('Archivo previamente cargado');
+        }
+        if (parsedData.identificacion) {
+          setIdentificacionRepresentante(parsedData.identificacion);
+          setIdentificacionRepresentanteFileName('Archivo previamente cargado');
+        }
+        if (parsedData.constancia_situacion_fiscal) {
+          setConstanciaSituacionFiscalMoral(parsedData.constancia_situacion_fiscal);
+          setConstanciaSituacionFiscalMoralFileName('Archivo previamente cargado');
+        }
+        if (parsedData.comprobante_domicilio) {
+          setComprobanteDomicilioFiscalMoral(parsedData.comprobante_domicilio);
+          setComprobanteDomicilioFiscalMoralFileName('Archivo previamente cargado');
+        }
+      } else if (parsedData.tipo_persona === 'fisica') {
+        if (parsedData.identificacion) {
+          setIdentificacionVigente(parsedData.identificacion);
+          setIdentificacionVigenteFileName('Archivo previamente cargado');
+        }
+        if (parsedData.constancia_situacion_fiscal) {
+          setConstanciaSituacionFiscalFisica(parsedData.constancia_situacion_fiscal);
+          setConstanciaSituacionFiscalFisicaFileName('Archivo previamente cargado');
+        }
+        if (parsedData.comprobante_domicilio) {
+          setComprobanteDomicilioFisica(parsedData.comprobante_domicilio);
+          setComprobanteDomicilioFisicaFileName('Archivo previamente cargado');
+        }
+      }
+    }
   };
 
   // Helper function to extract URL from state (handles both string and object formats)
@@ -217,42 +260,49 @@ export default function DonorsPage() {
     setDocumentoValorEspecie('');
     setDocumentoValorEspecieFileName('');
     
-    // Resetear campos de Persona Moral
-    setNombreRepresentanteLegal('');
-    setActaConstitutiva('');
-    setActaConstitutivaFileName('');
-    setPoderRepresentanteLegal('');
-    setPoderRepresentanteLegalFileName('');
-    setIdentificacionRepresentante('');
-    setIdentificacionRepresentanteFileName('');
-    setConstanciaSituacionFiscalMoral('');
-    setConstanciaSituacionFiscalMoralFileName('');
-    setComprobanteDomicilioFiscalMoral('');
-    setComprobanteDomicilioFiscalMoralFileName('');
-    
-    // Resetear campos de Persona Física
-    setCurp('');
-    setRegimenFiscal('');
-    setIdentificacionVigente('');
-    setIdentificacionVigenteFileName('');
-    setConstanciaSituacionFiscalFisica('');
-    setConstanciaSituacionFiscalFisicaFileName('');
-    setComprobanteDomicilioFisica('');
-    setComprobanteDomicilioFisicaFileName('');
-    
-    // Resetear campos de dirección
-    setCalle('');
-    setNumeroExterior('');
-    setColonia('');
-    setMunicipio('');
-    setEstado('');
-    setCodigoPostal('');
-    
-    // Resetear documentos para montos >= 189,000
+    // Reset donation-specific documents
     setDeclaracionOrigenRecursos('');
     setDeclaracionOrigenRecursosFileName('');
     setIdentificacionBeneficiarioControlador('');
     setIdentificacionBeneficiarioControladorFileName('');
+
+    // Reload donor data from localStorage to repopulate fields
+    const storedData = localStorage.getItem('donor_data');
+    if (storedData) {
+      const parsedData = JSON.parse(storedData);
+      
+      // Reload address fields
+      setCalle(parsedData.calle || '');
+      setNumeroExterior(parsedData.numero_exterior || '');
+      setColonia(parsedData.colonia || '');
+      setMunicipio(parsedData.municipio || '');
+      setEstado(parsedData.estado || '');
+      setCodigoPostal(parsedData.codigo_postal_fiscal || '');
+      
+      // Reload person-specific fields
+      if (parsedData.tipo_persona === 'moral') {
+        setNombreRepresentanteLegal('');
+        setActaConstitutiva(parsedData.acta_constitutiva || '');
+        setActaConstitutivaFileName('');
+        setPoderRepresentanteLegal(parsedData.poderes_legales || '');
+        setPoderRepresentanteLegalFileName('');
+        setIdentificacionRepresentante(parsedData.identificacion || '');
+        setIdentificacionRepresentanteFileName('');
+        setConstanciaSituacionFiscalMoral(parsedData.constancia_situacion_fiscal || '');
+        setConstanciaSituacionFiscalMoralFileName('');
+        setComprobanteDomicilioFiscalMoral(parsedData.comprobante_domicilio || '');
+        setComprobanteDomicilioFiscalMoralFileName('');
+      } else if (parsedData.tipo_persona === 'fisica') {
+        setCurp(parsedData.curp || '');
+        setRegimenFiscal(parsedData.regimen_fiscal || '');
+        setIdentificacionVigente(parsedData.identificacion || '');
+        setIdentificacionVigenteFileName('');
+        setConstanciaSituacionFiscalFisica(parsedData.constancia_situacion_fiscal || '');
+        setConstanciaSituacionFiscalFisicaFileName('');
+        setComprobanteDomicilioFisica(parsedData.comprobante_domicilio || '');
+        setComprobanteDomicilioFisicaFileName('');
+      }
+    }
   };
 
   const handleSubmitDonation = async (e: React.FormEvent) => {
@@ -694,26 +744,38 @@ export default function DonorsPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Carta de Donación {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        id="cartaDonacion"
-                        required
-                        accept=".pdf,image/*"
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) handleFileUpload(file, setCartaDonacion, setCartaDonacionFileName);
-                        }}
-                        className="hidden"
-                      />
-                      <label
-                        htmlFor="cartaDonacion"
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                      >
-                        <span className="text-sm text-gray-600">
-                          {cartaDonacionFileName || 'Seleccionar archivo...'}
-                        </span>
-                      </label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="file"
+                          id="cartaDonacion"
+                          required={!cartaDonacion}
+                          accept=".pdf,image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setCartaDonacion, setCartaDonacionFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="cartaDonacion"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {cartaDonacionFileName || 'Seleccionar archivo...'}
+                          </span>
+                        </label>
+                      </div>
+                      {cartaDonacion && (
+                        <a
+                          href={getUrlString(cartaDonacion)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
                     </div>
                   </div>
 
@@ -724,26 +786,38 @@ export default function DonorsPage() {
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Documento que Acredite la Propiedad {uploadingFile && '(Subiendo...)'}
                         </label>
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id="documentoPropiedadEspecie"
-                            required
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileUpload(file, setDocumentoPropiedadEspecie, setDocumentoPropiedadEspecieFileName);
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="documentoPropiedadEspecie"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                          >
-                            <span className="text-sm text-gray-600">
-                              {documentoPropiedadEspecieFileName || 'Seleccionar archivo...'}
-                            </span>
-                          </label>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <input
+                              type="file"
+                              id="documentoPropiedadEspecie"
+                              required
+                              accept=".pdf,image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file, setDocumentoPropiedadEspecie, setDocumentoPropiedadEspecieFileName);
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="documentoPropiedadEspecie"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                            >
+                              <span className="text-sm text-gray-600">
+                                {documentoPropiedadEspecieFileName || 'Seleccionar archivo...'}
+                              </span>
+                            </label>
+                          </div>
+                          {documentoPropiedadEspecie && (
+                            <a
+                              href={getUrlString(documentoPropiedadEspecie)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                            >
+                              Ver archivo
+                            </a>
+                          )}
                         </div>
                       </div>
 
@@ -751,26 +825,38 @@ export default function DonorsPage() {
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
                           Documento que Acredite el Valor de la Propiedad {uploadingFile && '(Subiendo...)'}
                         </label>
-                        <div className="relative">
-                          <input
-                            type="file"
-                            id="documentoValorEspecie"
-                            required
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileUpload(file, setDocumentoValorEspecie, setDocumentoValorEspecieFileName);
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="documentoValorEspecie"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                          >
-                            <span className="text-sm text-gray-600">
-                              {documentoValorEspecieFileName || 'Seleccionar archivo...'}
-                            </span>
-                          </label>
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <input
+                              type="file"
+                              id="documentoValorEspecie"
+                              required
+                              accept=".pdf,image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) handleFileUpload(file, setDocumentoValorEspecie, setDocumentoValorEspecieFileName);
+                              }}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="documentoValorEspecie"
+                              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                            >
+                              <span className="text-sm text-gray-600">
+                                {documentoValorEspecieFileName || 'Seleccionar archivo...'}
+                              </span>
+                            </label>
+                          </div>
+                          {documentoValorEspecie && (
+                            <a
+                              href={getUrlString(documentoValorEspecie)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                            >
+                              Ver archivo
+                            </a>
+                          )}
                         </div>
                       </div>
                     </>
@@ -781,26 +867,38 @@ export default function DonorsPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="declaracionOrigenRecursosEspecie"
-                          required
-                          accept=".pdf,image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="declaracionOrigenRecursosEspecie"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                        >
-                          <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                          </span>
-                        </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="declaracionOrigenRecursosEspecie"
+                            required
+                            accept=".pdf,image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="declaracionOrigenRecursosEspecie"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          >
+                            <span className="text-sm text-gray-600">
+                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
+                            </span>
+                          </label>
+                        </div>
+                        {declaracionOrigenRecursos && (
+                          <a
+                            href={getUrlString(declaracionOrigenRecursos)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            Ver archivo
+                          </a>
+                        )}
                       </div>
                     </div>
                   )}
@@ -835,26 +933,38 @@ export default function DonorsPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="declaracionOrigenRecursosTransferencia"
-                          required
-                          accept=".pdf,image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="declaracionOrigenRecursosTransferencia"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                        >
-                          <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                          </span>
-                        </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="declaracionOrigenRecursosTransferencia"
+                            required
+                            accept=".pdf,image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="declaracionOrigenRecursosTransferencia"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          >
+                            <span className="text-sm text-gray-600">
+                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
+                            </span>
+                          </label>
+                        </div>
+                        {declaracionOrigenRecursos && (
+                          <a
+                            href={getUrlString(declaracionOrigenRecursos)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            Ver archivo
+                          </a>
+                        )}
                       </div>
                     </div>
                   )}
@@ -889,26 +999,38 @@ export default function DonorsPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="declaracionOrigenRecursosEfectivo"
-                          required
-                          accept=".pdf,image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="declaracionOrigenRecursosEfectivo"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                        >
-                          <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                          </span>
-                        </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="declaracionOrigenRecursosEfectivo"
+                            required
+                            accept=".pdf,image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="declaracionOrigenRecursosEfectivo"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          >
+                            <span className="text-sm text-gray-600">
+                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
+                            </span>
+                          </label>
+                        </div>
+                        {declaracionOrigenRecursos && (
+                          <a
+                            href={getUrlString(declaracionOrigenRecursos)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            Ver archivo
+                          </a>
+                        )}
                       </div>
                     </div>
                   )}
@@ -943,26 +1065,38 @@ export default function DonorsPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
                       </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="declaracionOrigenRecursosCheque"
-                          required
-                          accept=".pdf,image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="declaracionOrigenRecursosCheque"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                        >
-                          <span className="text-sm text-gray-600">
-                            {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                          </span>
-                        </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="declaracionOrigenRecursosCheque"
+                            required
+                            accept=".pdf,image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="declaracionOrigenRecursosCheque"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          >
+                            <span className="text-sm text-gray-600">
+                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
+                            </span>
+                          </label>
+                        </div>
+                        {declaracionOrigenRecursos && (
+                          <a
+                            href={getUrlString(declaracionOrigenRecursos)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            Ver archivo
+                          </a>
+                        )}
                       </div>
                     </div>
                   )}
@@ -1099,125 +1233,195 @@ export default function DonorsPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Acta Constitutiva {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="actaConstitutiva"
-                      required
-                      accept=".pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setActaConstitutiva, setActaConstitutivaFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="actaConstitutiva"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {actaConstitutivaFileName || 'Seleccionar PDF...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="actaConstitutiva"
+                          required={!actaConstitutiva}
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setActaConstitutiva, setActaConstitutivaFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="actaConstitutiva"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {actaConstitutivaFileName || 'Seleccionar PDF...'}
+                          </span>
+                        </label>
+                      </div>
+                      {actaConstitutiva && (
+                        <a
+                          href={getUrlString(actaConstitutiva)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Poder del Representante Legal {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="poderRepresentanteLegal"
-                      required
-                      accept=".pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setPoderRepresentanteLegal, setPoderRepresentanteLegalFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="poderRepresentanteLegal"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {poderRepresentanteLegalFileName || 'Seleccionar PDF...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="poderRepresentanteLegal"
+                          required={!poderRepresentanteLegal}
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setPoderRepresentanteLegal, setPoderRepresentanteLegalFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="poderRepresentanteLegal"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {poderRepresentanteLegalFileName || 'Seleccionar PDF...'}
+                          </span>
+                        </label>
+                      </div>
+                      {poderRepresentanteLegal && (
+                        <a
+                          href={getUrlString(poderRepresentanteLegal)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Identificación Oficial del Representante {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="identificacionRepresentante"
-                      required
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setIdentificacionRepresentante, setIdentificacionRepresentanteFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="identificacionRepresentante"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {identificacionRepresentanteFileName || 'Seleccionar archivo...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="identificacionRepresentante"
+                          required={!identificacionRepresentante}
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setIdentificacionRepresentante, setIdentificacionRepresentanteFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="identificacionRepresentante"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {identificacionRepresentanteFileName || 'Seleccionar archivo...'}
+                          </span>
+                        </label>
+                      </div>
+                      {identificacionRepresentante && (
+                        <a
+                          href={getUrlString(identificacionRepresentante)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="constanciaSituacionFiscalMoral"
-                      required
-                      accept=".pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setConstanciaSituacionFiscalMoral, setConstanciaSituacionFiscalMoralFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="constanciaSituacionFiscalMoral"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {constanciaSituacionFiscalMoralFileName || 'Seleccionar PDF...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="constanciaSituacionFiscalMoral"
+                          required={!constanciaSituacionFiscalMoral}
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setConstanciaSituacionFiscalMoral, setConstanciaSituacionFiscalMoralFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="constanciaSituacionFiscalMoral"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {constanciaSituacionFiscalMoralFileName || 'Seleccionar PDF...'}
+                          </span>
+                        </label>
+                      </div>
+                      {constanciaSituacionFiscalMoral && (
+                        <a
+                          href={getUrlString(constanciaSituacionFiscalMoral)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Comprobante de Domicilio Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="comprobanteDomicilioFiscalMoral"
-                      required
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setComprobanteDomicilioFiscalMoral, setComprobanteDomicilioFiscalMoralFileName);
-                      }}
-                      className="hidden" 
-                    />
-                    <label
-                      htmlFor="comprobanteDomicilioFiscalMoral"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {comprobanteDomicilioFiscalMoralFileName || 'Seleccionar archivo...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="comprobanteDomicilioFiscalMoral"
+                          required={!comprobanteDomicilioFiscalMoral}
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setComprobanteDomicilioFiscalMoral, setComprobanteDomicilioFiscalMoralFileName);
+                          }}
+                          className="hidden" 
+                        />
+                        <label
+                          htmlFor="comprobanteDomicilioFiscalMoral"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {comprobanteDomicilioFiscalMoralFileName || 'Seleccionar archivo...'}
+                          </span>
+                        </label>
+                      </div>
+                      {comprobanteDomicilioFiscalMoral && (
+                        <a
+                          href={getUrlString(comprobanteDomicilioFiscalMoral)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   {(() => {
@@ -1317,75 +1521,117 @@ export default function DonorsPage() {
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Identificación Vigente (INE o Pasaporte) {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="identificacionVigente"
-                      required
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setIdentificacionVigente, setIdentificacionVigenteFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="identificacionVigente"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {identificacionVigenteFileName || 'Seleccionar archivo...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="identificacionVigente"
+                          required={!identificacionVigente}
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setIdentificacionVigente, setIdentificacionVigenteFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="identificacionVigente"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {identificacionVigenteFileName || 'Seleccionar archivo...'}
+                          </span>
+                        </label>
+                      </div>
+                      {identificacionVigente && (
+                        <a
+                          href={getUrlString(identificacionVigente)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="constanciaSituacionFiscalFisica"
-                      required
-                      accept=".pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setConstanciaSituacionFiscalFisica, setConstanciaSituacionFiscalFisicaFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="constanciaSituacionFiscalFisica"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {constanciaSituacionFiscalFisicaFileName || 'Seleccionar PDF...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="constanciaSituacionFiscalFisica"
+                          required={!constanciaSituacionFiscalFisica}
+                          accept=".pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setConstanciaSituacionFiscalFisica, setConstanciaSituacionFiscalFisicaFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="constanciaSituacionFiscalFisica"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {constanciaSituacionFiscalFisicaFileName || 'Seleccionar PDF...'}
+                          </span>
+                        </label>
+                      </div>
+                      {constanciaSituacionFiscalFisica && (
+                        <a
+                          href={getUrlString(constanciaSituacionFiscalFisica)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
                       Comprobante de Domicilio {uploadingFile && '(Subiendo...)'}
                     </label>
-                    <input
-                      type="file"
-                      id="comprobanteDomicilioFisica"
-                      required
-                      accept="image/*,.pdf"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) handleFileUpload(file, setComprobanteDomicilioFisica, setComprobanteDomicilioFisicaFileName);
-                      }}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="comprobanteDomicilioFisica"
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                    >
-                      <span className="text-sm text-gray-600">
-                        {comprobanteDomicilioFisicaFileName || 'Seleccionar archivo...'}
-                      </span>
-                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <input
+                          type="file"
+                          id="comprobanteDomicilioFisica"
+                          required={!comprobanteDomicilioFisica}
+                          accept="image/*,.pdf"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleFileUpload(file, setComprobanteDomicilioFisica, setComprobanteDomicilioFisicaFileName);
+                          }}
+                          className="hidden"
+                        />
+                        <label
+                          htmlFor="comprobanteDomicilioFisica"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                        >
+                          <span className="text-sm text-gray-600">
+                            {comprobanteDomicilioFisicaFileName || 'Seleccionar archivo...'}
+                          </span>
+                        </label>
+                      </div>
+                      {comprobanteDomicilioFisica && (
+                        <a
+                          href={getUrlString(comprobanteDomicilioFisica)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                        >
+                          Ver archivo
+                        </a>
+                      )}
+                    </div>
                   </div>
 
                 </>
