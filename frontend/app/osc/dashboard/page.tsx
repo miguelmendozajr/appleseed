@@ -234,7 +234,7 @@ export default function DashboardPage() {
                         Tipo de donante
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                        Monto donado en los últimos 6 meses (UMA)
+                        Monto donado en los últimos 6 meses (MXN)
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
                         Alertas
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                             {donante.rfc}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {donante.tipo === 'fisica' ? '👤 Física' : '🏢 Moral'}
+                            {donante.tipo === 'fisica' ? 'Física' : 'Moral'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             ${donante.montoTotal.toLocaleString()}
@@ -298,19 +298,19 @@ export default function DashboardPage() {
                         ID
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
+                        Fecha
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
                         Tipo de donativo
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                        Monto (UMA)
+                        Monto (MXN)
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
                         RFC del donante
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                        Require CFDI
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 tracking-wider">
-                        Archivos
+                        Acciones
                       </th>
                     </tr>
                   </thead>
@@ -333,42 +333,40 @@ export default function DashboardPage() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {donacion.ID}
                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {new Date(donacion.Fecha).toLocaleDateString('es-MX', { 
+                              year: 'numeric', 
+                              month: '2-digit', 
+                              day: '2-digit' 
+                            })}
+                          </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {donacion.Tipo}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${parseFloat(donacion.Monto).toLocaleString()}
+                            ${parseFloat(donacion.Tipo === 'especie' ? donacion.Valor_estimado : donacion.Monto).toLocaleString()}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {donacion.rfc_donantes}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            {donacion.Necesita_CFDI ? (
-                              <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">
-                                Sí
-                              </span>
-                            ) : (
-                              <span className="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs">
-                                No
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            {donacion.Fotografia_delbien ? (
-                              <a 
-                                href={donacion.Fotografia_delbien} 
-                                target="_blank" 
-                                className="text-blue-600 hover:underline"
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => {/* TODO: Implementar vista de detalles */}}
+                                className="px-3 py-1.5 bg-[#4A6B6D] text-white rounded-lg hover:bg-[#3A5B5D] hover:cursor-pointer transition-colors text-xs font-medium"
                               >
-                                📎 Ver
-                              </a>
-                            ) : donacion.Descripcion_delbien ? (
-                              <span className="text-gray-600" title={donacion.Descripcion_delbien}>
-                                📝 {donacion.Descripcion_delbien.substring(0, 20)}...
-                              </span>
-                            ) : (
-                              <span className="text-gray-400">-</span>
-                            )}
+                                Ver detalles
+                              </button>
+                              {!!donacion.Necesita_CFDI && !donacion.CFDI && (
+                                <button
+                                  onClick={() => {/* TODO: Implementar subida de CFDI */}}
+                                  className="px-3 py-1.5 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-colors text-xs font-medium"
+                                >
+                                  Subir CFDI
+                                </button>
+                              )}
+                              
+                            </div>
                           </td>
                         </tr>
                       ))
