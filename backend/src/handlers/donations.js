@@ -44,6 +44,23 @@ class DonationHttpHandler {
       }      
 
     }
+
+    async uploadCFDI(req, res) {
+      try {
+        const { donationId } = req.params;
+        const file = req.file;
+        
+        if (!file) {
+          return res.status(400).json({ error: 'No file uploaded' });
+        }
+        
+        const result = await this.donationController.uploadCFDI(donationId, file);
+        res.json(result);
+      } catch (error) {
+        console.error('Error uploading CFDI:', error);
+        res.status(500).json({ error: error.message });
+      }
+    }
   }
   
   // Export the class directly

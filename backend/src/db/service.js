@@ -196,6 +196,19 @@ class DBService {
     
     return result.insertId;
   }
+
+  async updateDonationCFDI(donationId, cfdiUrl) {
+    if (!this.initialized) {
+      throw new Error('Service not initialized');
+    }
+    
+    const [result] = await this.connection.query(
+      'UPDATE donaciones SET CFDI = ? WHERE ID = ?',
+      [cfdiUrl, donationId]
+    );
+    
+    return result;
+  }
 }
   
 module.exports = DBService;

@@ -40,13 +40,24 @@ interface Donor {
   alertas: string[];
 }
 
+interface Donation {
+  ID: number;
+  Fecha: string;
+  Tipo: string;
+  Monto: string;
+  Valor_estimado: string;
+  rfc_donantes: string;
+  Necesita_CFDI: number;
+  CFDI: string | null;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [oscData, setOscData] = useState<OSCData | null>(null);
   const [lawyers, setLawyers] = useState<Lawyer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [donaciones, setDonaciones] = useState([]);
+  const [donaciones, setDonaciones] = useState<Donation[]>([]);
   const [loadingDonaciones, setLoadingDonaciones] = useState(true);
   const [stats, setStats] = useState({
     montoTotal: 0,
@@ -119,7 +130,8 @@ export default function DashboardPage() {
       
       setStats({
         montoTotal: total,
-        cantidadDonaciones: data.length
+        cantidadDonaciones: data.length,
+        alertasPDL: 0
       });
 
     } catch (err) {
@@ -154,6 +166,65 @@ export default function DashboardPage() {
   const handleLogout = () => {
     localStorage.removeItem('osc_data');
     router.push('/');
+  };
+
+  const handleUploadCFDI = async (donationId: number, file: File) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/donations/${donationId}/cfdi`,
+        {
+          method: 'POST',
+          body: formData
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Error al subir CFDI');
+      }
+
+      const data = await response.json();
+      
+      // Update the donaciones state with the new CFDI URL
+      setDonaciones(prevDonaciones => 
+        prevDonaciones.map((don: Donation) => 
+          don.ID === donationId 
+            ? { ...don, CFDI: data.url } 
+            : don
+        )
+      );
+
+      alert('CFDI subido exitosamente');
+    } catch (err) {
+      console.error('Error uploading CFDI:', err);
+      alert('Error al subir el CFDI. Por favor intenta de nuevo.');
+    }
+  };
+
+  const triggerFileInput = (donationId: number) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.xml';
+    input.style.display = 'none';
+    
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        handleUploadCFDI(donationId, file);
+      }
+      // Remove input after use
+      document.body.removeChild(input);
+    };
+    
+    // Cleanup if user cancels
+    input.oncancel = () => {
+      document.body.removeChild(input);
+    };
+    
+    document.body.appendChild(input);
+    input.click();
   };
 
   return (
@@ -371,7 +442,7 @@ export default function DashboardPage() {
                         </td>
                       </tr>
                     ) : (
-                      donaciones.map((donacion: any, index: number) => (
+                      donaciones.map((donacion: Donation, index: number) => (
                         <tr key={donacion.ID} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {donacion.ID}
@@ -399,7 +470,7 @@ export default function DashboardPage() {
                               )}
                               {!!donacion.Necesita_CFDI && !donacion.CFDI && (
                                 <button
-                                  onClick={() => {/* TODO: Implementar subida de CFDI */}}
+                                  onClick={() => triggerFileInput(donacion.ID)}
                                   className="px-3 py-1.5 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-colors text-xs font-medium"
                                 >
                                   Subir CFDI

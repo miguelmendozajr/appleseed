@@ -76,6 +76,17 @@ class DonationController {
 
         return { id: donationId, message: 'Donation created successfully' };
     }
+
+    async uploadCFDI(donationId, file) {
+        // Upload file to S3
+        const result = await this.s3Service.uploadFile(file);
+        const fileUrl = result.url;
+        
+        // Update donation with CFDI URL
+        await this.service.updateDonationCFDI(donationId, fileUrl);
+        
+        return { url: fileUrl, message: 'CFDI uploaded successfully' };
+    }
     
 }
   

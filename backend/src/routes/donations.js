@@ -17,5 +17,6 @@ module.exports = (dbService, s3Service) => {
   router.get('/osc', donationHandler.getOSCDonations.bind(donationHandler));
   router.get('/osc/last-six-months', donationHandler.getOSCDonationsLastSixMonths.bind(donationHandler));
   router.post('/submit-file', upload.single('file'), donationHandler.submitFile.bind(donationHandler));
+  router.post('/:donationId/cfdi', upload.single('file'), donationHandler.uploadCFDI.bind(donationHandler));
   return router;
 };
