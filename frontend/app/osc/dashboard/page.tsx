@@ -96,6 +96,20 @@ export default function DashboardPage() {
     fetchDonantes(parsedData.rfc);
   }, [router]);
 
+  // Prevent scrolling when modal is open
+  useEffect(() => {
+    if (isDonorModalOpen || isDonationModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isDonorModalOpen, isDonationModalOpen]);
+
   const fetchLawyers = async () => {
     try {
       const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/lawyers`);
