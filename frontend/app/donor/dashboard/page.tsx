@@ -536,6 +536,20 @@ export default function DonorsPage() {
                 <span className="text-[#8BC34A]">seed</span>
               </span>
             </div>
+            <div className="flex items-center space-x-8">
+              <button
+                onClick={() => router.push('/donor/dashboard')}
+                className="text-sm font-medium text-[#4A6B6D] hover:text-[#8BC34A] hover:cursor-pointer transition-colors border-b-2 border-[#4A6B6D] pb-1"
+              >
+                Organizaciones
+              </button>
+              <button
+                onClick={() => router.push('/donor/donations')}
+                className="text-sm font-medium text-gray-600 hover:text-[#8BC34A] hover:cursor-pointer transition-colors"
+              >
+                Mis Donaciones
+              </button>
+            </div>
             <div className="flex items-center space-x-6">
               <div className="text-right">
                 <p className="text-sm font-semibold text-gray-900">{donorData?.nombre || 'Organización'}</p>

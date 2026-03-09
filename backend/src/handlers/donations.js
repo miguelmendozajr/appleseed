@@ -61,6 +61,16 @@ class DonationHttpHandler {
         res.status(500).json({ error: error.message });
       }
     }
+
+    async getDonorDonations(req, res) {
+      try {
+        const { rfc } = req.params;
+        const donations = await this.donationController.getDonorDonations(rfc);
+        res.json(donations);
+      } catch (error) {
+        res.status(500).json({ error: error.message });
+      }
+    }
   }
   
   // Export the class directly

@@ -87,6 +87,11 @@ class DonationController {
         
         return { url: fileUrl, message: 'CFDI uploaded successfully' };
     }
+
+    async getDonorDonations(rfc) {
+        const donations = await this.service.getDonorDonations(rfc);
+        return donations;
+    }
     
 }
   
