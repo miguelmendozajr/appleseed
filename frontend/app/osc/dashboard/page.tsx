@@ -220,6 +220,11 @@ export default function DashboardPage() {
         )
       );
 
+      // Update the selected donation in the modal to show the new CFDI
+      if (selectedDonation && selectedDonation.ID === donationId) {
+        setSelectedDonation({ ...selectedDonation, CFDI: data.url });
+      }
+
       alert('CFDI subido exitosamente');
     } catch (err) {
       console.error('Error uploading CFDI:', err);
@@ -976,10 +981,7 @@ export default function DashboardPage() {
                         <p className="text-xs text-yellow-600 mt-1">El comprobante fiscal aún no ha sido cargado</p>
                       </div>
                       <button
-                        onClick={() => {
-                          closeDonationModal();
-                          triggerFileInput(selectedDonation.ID);
-                        }}
+                        onClick={() => triggerFileInput(selectedDonation.ID)}
                         className="px-4 py-2 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] transition-colors text-sm font-medium"
                       >
                         Subir CFDI
