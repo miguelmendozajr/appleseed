@@ -86,7 +86,7 @@ export default function LoginPage() {
                 Iniciar Sesión
               </h1>
               <p className="text-gray-600">
-                Ingresa con tu cuenta de organización
+                Ingresa con tu cuenta
               </p>
             </div>
 
