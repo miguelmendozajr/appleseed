@@ -5,7 +5,7 @@ import { ctaData } from './data';
 
 export default function CTA() {
   return (
-    <section className="py-20 bg-gradient-to-r from-teal-600 to-teal-700">
+    <section className="py-20 bg-gradient-to-r from-[#8BC34A] to-[#7CB342]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         {/* Title */}
         <h2 className="text-4xl lg:text-5xl font-bold text-white mb-6">{ctaData.title}</h2>
@@ -14,7 +14,7 @@ export default function CTA() {
         <p className="text-xl text-emerald-50 mb-10 leading-relaxed">{ctaData.description}</p>
 
         {/* CTA Button */}
-        <button className="inline-block px-12 py-4 bg-white text-teal-600 font-bold text-lg rounded-lg hover:bg-gray-100 transition-colors shadow-xl mb-8">
+        <button className="inline-block px-12 py-4 bg-white text-[#8BC34A] font-bold text-lg rounded-lg hover:bg-gray-100 transition-colors shadow-xl mb-8">
           {ctaData.cta}
         </button>
 

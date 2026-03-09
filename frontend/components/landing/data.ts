@@ -1,61 +1,58 @@
 // Navigation links
 export const navLinks = [
+  { label: 'Acceso', href: '#acceso'},
   { label: 'Problema', href: '#problema' },
   { label: 'Solución', href: '#solucion' },
-  { label: 'Cómo funciona', href: '#como-funciona' },
-  { label: 'Beneficios', href: '#beneficios' },
+  { label: 'Beneficios', href: '#beneficios' }
 ];
 
 // Hero section
 export const heroData = {
-  badge: 'Plataforma certificada para OSC mexicanas',
   title: 'Cumplimiento Legal Inteligente',
   titleHighlight: 'para OSC en México',
   description:
-    'Centraliza SAT, UIF y CLUNI en un solo dashboard. Reduce errores, evita multas y automatiza tu cumplimiento normativo.',
-  stats: '+120 OSC ya gestionan su cumplimiento',
-  ctaPrimary: 'Solicitar Demo',
-  ctaSecondary: 'Ver cómo funciona',
-  integrations: ['SAT', 'UIF', 'CLUNI', 'integrados'],
+    'Reduce errores, evita multas y automatiza tu cumplimiento normativo.',
+  stats: '+10 OSC ya gestionan su cumplimiento',
+  ctaPrimary: 'Ver Demo'
 };
 
 // How it works section (3 steps)
 export const howItWorksData = {
-  title: '¿Cómo funciona?',
+  title: '¿Cómo funciona nuestra solución?',
   subtitle:
-    'Cumple con SAT, UIF y CLUNI en tres pasos simples. Automatiza, monitorea y recibe alertas para que tu OSC nunca pierda el control.',
+    'Automatiza, monitorea y recibe alertas para que tu OSC nunca pierda el control.',
   steps: [
     {
       number: 1,
-      title: 'Conecta tus datos',
+      title: 'Ingresa tus datos',
       description:
-        'Vincula tu RFC, clave CLUNI y perfil ante la UIF. CompliOSC importa automáticamente tus obligaciones vigentes desde cada autoridad.',
+        'Seas donante o organización civil, puedes registrate utilizanodo tu RFC y una contraseña.',
       features: [
-        'Integración directa con portales oficiales',
-        'Sin necesidad de captura manual',
-        'Configuración en menos de 20 minutos',
+        'Solo usuarios autorizados pueden acceder a nuestro sistema',
+        'Sin necesidad de ingresar datos sensibles en un inicio',
+        'Registro en menos de 5 minutos'
       ],
     },
     {
       number: 2,
-      title: 'Monitorea tu cumplimiento',
+      title: 'Solicita documentos a tus donantes',
       description:
-        'Visualiza en tiempo real el estado de cada obligación. Identifica riesgos antes de que se conviertan en infracciones.',
+        'La plataforma facilita que tu OSC solicite y recabe los documentos requeridos de cada donante. Toda la información necesaria para reportar al SAT en caso de ser requerido, organizada y accesible.',
       features: [
-        'Semáforo de riesgo en tiempo real',
-        'Historial de cumplimiento auditable',
-        'Reportes para tu consejo directivo',
+        'Solicitudes automatizadas de documentos',
+        'Repositorio organizado por donante',
+        'Cumplimiento SAT simplificado',
       ],
     },
     {
       number: 3,
-      title: 'Recibe alertas automáticas',
+      title: 'Monitorea alertas en tiempo real',
       description:
-        'El sistema te notifica con anticipación. Tu equipo recibe recordatorios personalizados y las obligaciones nunca pasan desapercibidas.',
+        'Identifica automáticamente situaciones de riesgo como operaciones PDL, donaciones en efectivo y documentos faltantes. Visualiza alertas codificadas por color directamente en tu dashboard.',
       features: [
-        'Alertas por correo y plataforma',
-        'Flujos de aprobación internos',
-        'Confirmación automática de presentaciones',
+        'Detección automática de riesgos PDL',
+        'Alertas por donaciones en efectivo',
+        'Seguimiento de CFDIs',
       ],
     },
   ],

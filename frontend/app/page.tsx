@@ -8,9 +8,9 @@ import CTA from '@/components/landing/CTA';
 import AuthEntrySection from '@/components/landing/AuthEntrySection';
 
 export const metadata = {
-  title: 'CompliOSC - Cumplimiento Legal Inteligente para OSC en México',
+  title: 'Appleseed - Plataforma de Gestión de Donaciones para OSC en México',
   description:
-    'Centraliza SAT, UIF y CLUNI en un solo dashboard. Reduce errores, evita multas y automatiza tu cumplimiento normativo.',
+    'Gestiona donantes, donaciones y cumplimiento normativo. Optimiza CFDI y alertas PDL.',
 };
 
 export default function Home() {
@@ -21,9 +21,7 @@ export default function Home() {
       <AuthEntrySection />
       <Problem />
       <HowItWorks />
-      <Features />
       <Benefits />
-      <CTA />
     </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Link from 'next/link';
 import { navLinks } from './data';
 
 export default function Navbar() {
@@ -11,10 +10,10 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <div className="flex items-center">
-            <div className="flex items-center justify-center w-10 h-10 bg-teal-600 rounded-lg mr-3">
-              <span className="text-white font-bold text-lg">O</span>
-            </div>
-            <span className="text-xl font-bold text-gray-900">CompliOSC</span>
+            <span className="text-3xl font-bold">
+              <span className="text-[#4A6B6D]">Apple</span>
+              <span className="text-[#8BC34A]">seed</span>
+            </span>
           </div>
 
           {/* Navigation Links */}
@@ -32,11 +31,8 @@ export default function Navbar() {
 
           {/* Right Side Buttons */}
           <div className="flex items-center space-x-4">
-            <button className="text-teal-600 hover:text-teal-700 transition-colors font-medium text-sm">
-              Iniciar sesión
-            </button>
-            <button className="px-6 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors font-medium text-sm">
-              Solicitar Demo
+            <button className="px-6 py-2 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-colors font-medium text-sm">
+              Ver Demo
             </button>
           </div>
         </div>

@@ -9,25 +9,25 @@ export default function AuthEntrySection() {
     {
       title: 'Iniciar sesión para Donate',
       desc: 'Accede como donante para gestionar tus donaciones.',
-      href: '/donate/login',
+      href: '/donor/login',
       icon: LogIn,
     },
     {
       title: 'Registrar Donate',
       desc: 'Crea tu cuenta de donante en pocos pasos.',
-      href: '/donate/register',
+      href: '/donor/signup',
       icon: UserPlus,
     },
     {
       title: 'Iniciar sesión para Organizaciones',
       desc: 'Entra como organización y monitorea cumplimiento.',
-      href: '/org/login',
+      href: '/osc/login',
       icon: LogIn,
     },
     {
       title: 'Registro de Organizaciones',
       desc: 'Registra tu organización para empezar.',
-      href: '/org/register',
+      href: '/osc/signup',
       icon: UserPlus,
     },
   ];
@@ -41,11 +41,11 @@ export default function AuthEntrySection() {
         {/* Title */}
         <div className="text-center mb-16">
           <h2 className="text-4xl sm:text-5xl font-extrabold leading-tight">
-            <span className="block text-emerald-800">Únete</span>
+            <span className="block text-[#4A6B6D]">Únete</span>
             <span className="block text-slate-800 mt-1">con nosotros</span>
           </h2>
           <p className="mt-4 mx-auto max-w-xl text-lg sm:text-xl leading-relaxed text-slate-700">
-            Elige tu vía de acceso y empieza a disfrutar de los beneficios de CompliOSC.
+            Elige tu vía de acceso y empieza a disfrutar de los beneficios de AppleSeed.
           </p>
         </div>
 
@@ -57,16 +57,13 @@ export default function AuthEntrySection() {
               <Link
                 key={idx}
                 href={card.href}
-                className="block bg-white rounded-2xl p-10 min-h-[280px] border border-transparent shadow-md transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
+                className="block bg-white rounded-2xl p-10 border border-transparent shadow-md transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#8BC34A]"
               >
                 <div className="flex items-center mb-4">
                   <IconComponent className="w-8 h-8 text-emerald-600" strokeWidth={1.5} />
                 </div>
                 <h3 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-3">{card.title}</h3>
                 <p className="text-slate-700 text-base leading-relaxed">{card.desc}</p>
-                <span className="inline-block mt-8 px-6 py-3 bg-teal-600 text-white font-medium rounded-lg">
-                  Ir
-                </span>
               </Link>
             );
           })}
