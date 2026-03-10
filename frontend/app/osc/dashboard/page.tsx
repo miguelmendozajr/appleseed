@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ScatterChart, Scatter, ZAxis, Cell } from 'recharts';
 
 interface Lawyer {
   id: number;
@@ -55,6 +56,20 @@ interface Donation {
   Acreditacion_Valir_Propiedad: string;
 }
 
+interface ChartData {
+  month: string;
+  total: number;
+}
+
+interface BubbleData {
+  name: string;
+  totalDonated: number;
+  count: number;
+  x: number;
+  y: number;
+  z: number;
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [oscData, setOscData] = useState<OSCData | null>(null);
@@ -69,6 +84,9 @@ export default function DashboardPage() {
     alertasPDL: 0
   });
   const [donantes, setDonantes] = useState<Donor[]>([]);
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [bubbleData, setBubbleData] = useState<BubbleData[]>([]);
+  const [topDonor, setTopDonor] = useState<string | null>(null);
   
   // Modal states
   const [isDonorModalOpen, setIsDonorModalOpen] = useState(false);
@@ -158,6 +176,27 @@ export default function DashboardPage() {
         alertasPDL: 0
       });
 
+      // Procesar datos para la gráfica por mes
+      const groupedByMonth = data.reduce((acc: Record<string, number>, donacion: Donation) => {
+        const date = new Date(donacion.Fecha);
+        const monthYear = date.toLocaleString('es-MX', { month: 'short', year: 'numeric' });
+        
+        if (!acc[monthYear]) {
+          acc[monthYear] = 0;
+        }
+        
+        const monto = donacion.Tipo === 'especie' ? parseFloat(donacion.Valor_estimado) : parseFloat(donacion.Monto);
+        acc[monthYear] += monto;
+        return acc;
+      }, {});
+
+      const chartDataArray: ChartData[] = Object.entries(groupedByMonth).map(([month, total]) => ({
+        month,
+        total: total as number
+      }));
+
+      setChartData(chartDataArray);
+
     } catch (err) {
       console.error('Error fetching donaciones:', err);
       setError('No se pudieron cargar las donaciones');
@@ -165,6 +204,75 @@ export default function DashboardPage() {
       setLoadingDonaciones(false);
     }
   };
+
+  // Actualizar datos de burbujas cuando cambien donantes o donaciones
+  useEffect(() => {
+    if (donantes.length > 0 && donaciones.length > 0) {
+      // Contar donaciones por donante
+      const donationCountByRFC: Record<string, number> = {};
+      donaciones.forEach(donacion => {
+        donationCountByRFC[donacion.rfc_donantes] = (donationCountByRFC[donacion.rfc_donantes] || 0) + 1;
+      });
+
+      // Encontrar el donante con mayor donación
+      let maxAmount = 0;
+      let topDonorRFC = null;
+      
+      donantes.forEach(donante => {
+        if (donante.donadoSeisMeses > maxAmount) {
+          maxAmount = donante.donadoSeisMeses;
+          topDonorRFC = donante.rfc;
+        }
+      });
+      
+      setTopDonor(topDonorRFC);
+      
+      // Crear datos para burbujas
+      const maxAmountForScale = Math.max(...donantes.map(d => d.donadoSeisMeses));
+      
+      const bubbles: BubbleData[] = donantes.map((donante) => {
+        const count = donationCountByRFC[donante.rfc] || 0;
+        
+        // Escalar el tamaño
+        const minSize = 80;
+        const maxSize = 200;
+        const scaledSize = minSize + (donante.donadoSeisMeses / maxAmountForScale) * (maxSize - minSize);
+        
+        return {
+          name: donante.rfc,
+          totalDonated: donante.donadoSeisMeses,
+          count: count,
+          x: count,
+          y: donante.donadoSeisMeses,
+          z: scaledSize
+        };
+      });
+
+      // Agrupar y ajustar posiciones para evitar superposición
+      const donorsByCount = bubbles.reduce((acc, donor) => {
+        if (!acc[donor.count]) {
+          acc[donor.count] = [];
+        }
+        acc[donor.count].push(donor);
+        return acc;
+      }, {} as Record<number, BubbleData[]>);
+
+      const adjustedBubbles = bubbles.map(donor => {
+        const sameCountDonors = donorsByCount[donor.count] || [];
+        if (sameCountDonors.length > 1) {
+          const index = sameCountDonors.findIndex(d => d.name === donor.name);
+          const offset = (index - (sameCountDonors.length - 1) / 2) * 0.15;
+          return {
+            ...donor,
+            x: donor.count + offset
+          };
+        }
+        return donor;
+      });
+
+      setBubbleData(adjustedBubbles);
+    }
+  }, [donantes, donaciones]);
 
   const fetchDonantes = async (rfc: string) => {
     try {
@@ -343,16 +451,160 @@ export default function DashboardPage() {
           {/* Chart Placeholders */}
           <div className="grid md:grid-cols-2 gap-6 mt-6">
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Donaciones por Mes</h3>
-              <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
-                <p className="text-gray-400">Gráfica pendiente</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Donaciones en los últimos 6 meses</h3>
+              <div className="h-64">
+                {loadingDonaciones ? (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">Cargando datos...</p>
+                  </div>
+                ) : chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} margin={{ top: 10, right: 30, left: 70, bottom: 40 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis 
+                        dataKey="month"
+                        label={{
+                          value: 'Mes',
+                          position: 'bottom',
+                          offset: 20,
+                          style: { fill: '#4a5568', fontSize: '12px', fontWeight: 500 }
+                        }}
+                        tick={{ fill: '#718096', fontSize: '11px' }}
+                        tickLine={{ stroke: '#cbd5e0' }}
+                        axisLine={{ stroke: '#cbd5e0' }}
+                      />
+                      <YAxis
+                        label={{
+                          value: 'Monto total ($)',
+                          angle: -90,
+                          position: 'left',
+                          offset: 30,
+                          style: { fill: '#4a5568', fontSize: '12px', fontWeight: 500, textAnchor: 'middle' }
+                        }}
+                        tickFormatter={(value) => {
+                          if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                          if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+                          return `$${value}`;
+                        }}
+                        tick={{ fill: '#718096', fontSize: '11px' }}
+                        tickLine={{ stroke: '#cbd5e0' }}
+                        axisLine={{ stroke: '#cbd5e0' }}
+                      />
+                      <Tooltip formatter={(value) => [`$${(value as number).toLocaleString()}`, 'Monto']} />
+                      <Bar dataKey="total" fill="#8BC34A" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">No hay datos disponibles</p>
+                  </div>
+                )}
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Tipo</h3>
-              <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
-                <p className="text-gray-400">Gráfica pendiente</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Donante</h3>
+              <div className="h-64">
+                {loadingDonaciones ? (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">Cargando datos...</p>
+                  </div>
+                ) : bubbleData.length > 0 ? (
+                  <>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <ScatterChart margin={{ top: 10, right: 30, bottom: 40, left: 80 }}>
+                        <XAxis
+                          type="number"
+                          dataKey="x"
+                          name="Número de donaciones"
+                          label={{
+                            value: 'Número de donaciones',
+                            position: 'bottom',
+                            offset: 20,
+                            style: { fill: '#4a5568', fontSize: '12px', fontWeight: 500 }
+                          }}
+                          domain={[0.5, Math.max(...bubbleData.map(d => d.count), 1) + 0.5]}
+                          ticks={[...new Set(bubbleData.map(d => d.count))].sort((a, b) => a - b)}
+                          tick={{ fill: '#718096', fontSize: '11px' }}
+                          tickLine={{ stroke: '#cbd5e0' }}
+                          axisLine={{ stroke: '#cbd5e0' }}
+                          allowDecimals={false}
+                          interval={0}
+                        />
+                        <YAxis
+                          type="number"
+                          dataKey="y"
+                          name="Monto total donado"
+                          label={{
+                            value: 'Monto total donado ($)',
+                            angle: -90,
+                            position: 'left',
+                            offset: 30,
+                            style: { fill: '#4a5568', fontSize: '12px', fontWeight: 500, textAnchor: 'middle' }
+                          }}
+                          tickFormatter={(value) => {
+                            if (value >= 1000000) return `$${(value / 1000000).toFixed(1)}M`;
+                            if (value >= 1000) return `$${(value / 1000).toFixed(0)}K`;
+                            return `$${value}`;
+                          }}
+                          domain={[0, 'dataMax + 500']}
+                          tick={{ fill: '#718096', fontSize: '11px' }}
+                          tickLine={{ stroke: '#cbd5e0' }}
+                          axisLine={{ stroke: '#cbd5e0' }}
+                        />
+                        <ZAxis type="number" dataKey="z" range={[60, 200]} />
+                        <Tooltip
+                          content={(props: unknown) => {
+                            const { active, payload } = props as { active?: boolean; payload?: Array<{ payload: BubbleData }> };
+                            if (active && payload && payload.length) {
+                              const data = payload[0].payload;
+                              const isTopDonor = data.name === topDonor;
+                              return (
+                                <div className="bg-white p-3 border border-gray-200 rounded-lg shadow-lg text-xs">
+                                  <p className={`font-semibold mb-1 ${isTopDonor ? 'text-red-500' : 'text-gray-900'}`}>
+                                    RFC: {data.name}
+                                    {isTopDonor && ' 🏆'}
+                                  </p>
+                                  <p className="text-gray-700 mb-0.5">
+                                    Total donado: ${data.totalDonated.toLocaleString()}
+                                  </p>
+                                  <p className="text-gray-700">
+                                    No. donaciones: {data.count}
+                                  </p>
+                                </div>
+                              );
+                            }
+                            return null;
+                          }}
+                        />
+                        <Scatter data={bubbleData} fill="#8884d8" shape="circle" isAnimationActive={false}>
+                          {bubbleData.map((entry, index) => (
+                            <Cell
+                              key={`cell-${index}`}
+                              fill={entry.name === topDonor ? '#EF4444' : '#94A3B8'}
+                            />
+                          ))}
+                        </Scatter>
+                      </ScatterChart>
+                    </ResponsiveContainer>
+                  </>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">No hay datos disponibles</p>
+                  </div>
+                )}
               </div>
+              {bubbleData.length > 0 && !loadingDonaciones && (
+                <div className="flex justify-center gap-4 mt-3 text-xs">
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#94A3B8] mr-2"></div>
+                    <span className="text-gray-700">Donantes</span>
+                  </div>
+                  <div className="flex items-center">
+                    <div className="w-3 h-3 rounded-full bg-[#EF4444] mr-2"></div>
+                    <span className="text-gray-700">Mayor donante</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
