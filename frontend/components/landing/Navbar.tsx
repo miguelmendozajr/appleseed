@@ -28,13 +28,6 @@ export default function Navbar() {
               </a>
             ))}
           </div>
-
-          {/* Right Side Buttons */}
-          <div className="flex items-center space-x-4">
-            <button className="px-6 py-2 bg-[#8BC34A] text-white rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-colors font-medium text-sm">
-              Ver Demo
-            </button>
-          </div>
         </div>
       </div>
     </nav>

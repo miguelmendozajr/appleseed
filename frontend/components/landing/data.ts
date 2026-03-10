@@ -13,7 +13,6 @@ export const heroData = {
   description:
     'Reduce errores, evita multas y automatiza tu cumplimiento normativo.',
   stats: '+10 OSC ya gestionan su cumplimiento',
-  ctaPrimary: 'Ver Demo'
 };
 
 // How it works section (3 steps)

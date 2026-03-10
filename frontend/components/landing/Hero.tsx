@@ -55,18 +55,6 @@ export default function Hero() {
                 </div>
               </div>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 mb-12 lg:mb-14">
-                {/* Primary CTA */}
-                <button className="group flex items-center justify-center px-7 py-3.5 bg-[#8BC34A] text-white font-semibold rounded-lg hover:bg-[#7CB342] hover:cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-[#8BC34A]/20 active:scale-[0.98]">
-                  {heroData.ctaPrimary}
-                  <svg className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                  </svg>
-                </button>
-
-              </div>
-
             </div>
 
             {/* RIGHT SECTION - grouped mockup container */}
