@@ -203,7 +203,7 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="bg-white rounded-lg shadow-md p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Tipo</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Donante</h3>
               <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
                  {oscData ? (
                   <DonorsCircleChart rfc={oscData.rfc} />
