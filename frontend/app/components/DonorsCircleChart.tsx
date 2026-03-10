@@ -267,28 +267,6 @@ export default function DonorsCircleChart({ rfc }: DonorsCircleChartProps) {
           </Scatter>
         </ScatterChart>
       </ResponsiveContainer>
-      
-      {/* Leyenda opcional */}
-      <div style={{
-        position: 'absolute',
-        top: 10,
-        right: 10,
-        backgroundColor: 'rgba(255, 255, 255, 0.9)',
-        padding: '6px 10px',
-        borderRadius: '4px',
-        fontSize: '11px',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', marginBottom: '4px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: DEFAULT_COLOR, marginRight: '6px' }}></div>
-          <span style={{ color: '#4a5568' }}>Donantes</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '50%', backgroundColor: HIGHLIGHT_COLOR, marginRight: '6px' }}></div>
-          <span style={{ color: '#4a5568' }}>Mayor donante</span>
-        </div>
-      </div>
     </div>
   );
 }
