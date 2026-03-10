@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { getOSCDonationsLastSixMonths, Donation } from '../../services/donationService';
+import DonorsCircleChart from '../../components/DonorsCircleChart';
 
 interface Lawyer {
   id: number;
@@ -204,7 +205,13 @@ export default function DashboardPage() {
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Tipo</h3>
               <div className="h-64 bg-gray-100 rounded flex items-center justify-center">
-                <p className="text-gray-400">Gráfica pendiente</p>
+                 {oscData ? (
+                  <DonorsCircleChart rfc={oscData.rfc} />
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-gray-400">Cargando organización...</p>
+                  </div>
+                )}
               </div>
             </div>
           </div>
