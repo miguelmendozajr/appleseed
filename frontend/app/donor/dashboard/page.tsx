@@ -374,7 +374,7 @@ export default function DonorsPage() {
         }
         
         const valorNum = parseFloat(valorEstimado);
-        if (valorNum >= 189000) {
+        if (valorNum > 188183) {
           if (documentoPropiedadEspecie) {
             payload.documentoPropiedad = getUrlString(documentoPropiedadEspecie);
           }
@@ -386,7 +386,7 @@ export default function DonorsPage() {
       
       // Documents for amounts >= 189,000
       const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
-      if (montoNumerico >= 189000) {
+      if (montoNumerico > 188183) {
         if (declaracionOrigenRecursos) {
           payload.declaracionOrigenRecursos = getUrlString(declaracionOrigenRecursos);
         }
@@ -477,7 +477,7 @@ export default function DonorsPage() {
              cartaDonacion !== '';
       
       // Si el valor es mayor a 189,000, validar documentos adicionales
-      if (isBasicValid && valorNumerico >= 189000) {
+      if (isBasicValid && valorNumerico > 188183) {
         isBasicValid = documentoPropiedadEspecie !== '' && documentoValorEspecie !== '';
       }
     } else if (tipoDonacion === 'transferencia') {
@@ -500,7 +500,7 @@ export default function DonorsPage() {
     
     // Validar documentos adicionales si el monto >= 189,000
     const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
-    if (montoNumerico >= 189000) {
+    if (montoNumerico > 188183) {
       if (declaracionOrigenRecursos === '') return false;
       if (donorData?.tipo_persona === 'moral' && identificacionBeneficiarioControlador === '') return false;
     }
@@ -793,8 +793,8 @@ export default function DonorsPage() {
                     </div>
                   </div>
 
-                  {/* Documentos adicionales si el valor es mayor a 189,000 */}
-                  {parseFloat(valorEstimado) >= 189000 && (
+                  {/* Documentos adicionales si el valor es mayor a 188,183 */}
+                  {parseFloat(valorEstimado) >= 188183 && (
                     <>
                       <div>
                         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -876,7 +876,7 @@ export default function DonorsPage() {
                     </>
                   )}
 
-                  {parseFloat(valorEstimado) >= 189000 && (
+                  {parseFloat(valorEstimado) >= 188183 && donorData?.tipo_persona === 'fisica' && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
@@ -942,7 +942,7 @@ export default function DonorsPage() {
                     </div>
                   </div>
 
-                  {parseFloat(monto) >= 189000 && (
+                  {parseFloat(monto) >= 188183 && donorData?.tipo_persona === 'fisica' && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
@@ -1008,7 +1008,7 @@ export default function DonorsPage() {
                     </div>
                   </div>
 
-                  {parseFloat(monto) >= 189000 && (
+                  {parseFloat(monto) >= 188183 && donorData?.tipo_persona === 'fisica' && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
@@ -1074,7 +1074,7 @@ export default function DonorsPage() {
                     </div>
                   </div>
 
-                  {parseFloat(monto) >= 189000 && (
+                  {parseFloat(monto) >= 188183 && donorData?.tipo_persona === 'fisica' && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
@@ -1360,16 +1360,20 @@ export default function DonorsPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <input
-                          type="file"
-                          id="constanciaSituacionFiscalMoral"
-                          required={!constanciaSituacionFiscalMoral}
+                  {(() => {
+                    const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
+                    return montoNumerico >= 188183;
+                  })() && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
+                      </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="constanciaSituacionFiscalMoral"
+                            required={!constanciaSituacionFiscalMoral}
                           accept=".pdf"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -1397,7 +1401,8 @@ export default function DonorsPage() {
                         </a>
                       )}
                     </div>
-                  </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1440,7 +1445,7 @@ export default function DonorsPage() {
 
                   {(() => {
                     const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
-                    return montoNumerico >= 189000;
+                    return montoNumerico >= 188183;
                   })() && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -1570,16 +1575,20 @@ export default function DonorsPage() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
-                    </label>
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <input
-                          type="file"
-                          id="constanciaSituacionFiscalFisica"
-                          required={!constanciaSituacionFiscalFisica}
+                  {(() => {
+                    const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
+                    return montoNumerico >= 188183;
+                  })() && (
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-2">
+                        Constancia de Situación Fiscal {uploadingFile && '(Subiendo...)'}
+                      </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="constanciaSituacionFiscalFisica"
+                            required={!constanciaSituacionFiscalFisica}
                           accept=".pdf"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
@@ -1607,7 +1616,8 @@ export default function DonorsPage() {
                         </a>
                       )}
                     </div>
-                  </div>
+                    </div>
+                  )}
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
