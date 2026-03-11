@@ -195,6 +195,22 @@ export default function DashboardPage() {
         total: total as number
       }));
 
+      // Sort by date in ascending order (oldest to newest)
+      chartDataArray.sort((a, b) => {
+        const monthMap: Record<string, number> = {
+          'ene': 0, 'feb': 1, 'mar': 2, 'abr': 3, 'may': 4, 'jun': 5,
+          'jul': 6, 'ago': 7, 'sep': 8, 'oct': 9, 'nov': 10, 'dic': 11
+        };
+        
+        const [monthA, yearA] = a.month.split(' ');
+        const [monthB, yearB] = b.month.split(' ');
+        
+        const dateA = new Date(parseInt(yearA), monthMap[monthA.toLowerCase()]);
+        const dateB = new Date(parseInt(yearB), monthMap[monthB.toLowerCase()]);
+        
+        return dateA.getTime() - dateB.getTime();
+      });
+
       setChartData(chartDataArray);
 
     } catch (err) {
