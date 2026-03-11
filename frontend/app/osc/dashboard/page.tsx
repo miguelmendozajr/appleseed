@@ -952,7 +952,7 @@ export default function DashboardPage() {
               {/* Address Information */}
               {(selectedDonor.calle || selectedDonor.colonia) && (
                 <div>
-                  <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Domicilio</h3>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 border-b pb-2">Domicilio Fiscal</h3>
                   <div className="grid md:grid-cols-2 gap-4">
                     {selectedDonor.calle && (
                       <div>

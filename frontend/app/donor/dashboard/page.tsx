@@ -1121,7 +1121,7 @@ export default function DonorsPage() {
               {tipoDonacion && (
                 <>
                   <div className="pt-4 border-t border-gray-200">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos de Domicilio</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">Datos de Domicilio Fiscal</h3>
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -1621,7 +1621,7 @@ export default function DonorsPage() {
 
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Comprobante de Domicilio {uploadingFile && '(Subiendo...)'}
+                      Comprobante de Domicilio Fiscal {uploadingFile && '(Subiendo...)'}
                     </label>
                     <div className="flex gap-2">
                       <div className="flex-1">
