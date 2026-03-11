@@ -170,11 +170,11 @@ export default function DashboardPage() {
         total += donacion.Tipo === 'especie' ? parseFloat(donacion.Valor_estimado) : parseFloat(donacion.Monto);
       }
       
-      setStats({
+      setStats(prev => ({
+        ...prev,
         montoTotal: total,
         cantidadDonaciones: data.length,
-        alertasPDL: 0
-      });
+      }));
 
       // Procesar datos para la gráfica por mes
       const groupedByMonth = data.reduce((acc: Record<string, number>, donacion: Donation) => {
