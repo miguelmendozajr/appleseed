@@ -507,18 +507,28 @@ export default function DonorsPage() {
     
     // Validar campos específicos según tipo de persona
     if (donorData?.tipo_persona === 'moral') {
-      return nombreRepresentanteLegal.trim() !== '' &&
+      const basicValidation = nombreRepresentanteLegal.trim() !== '' &&
              actaConstitutiva !== '' &&
              poderRepresentanteLegal !== '' &&
              identificacionRepresentante !== '' &&
-             constanciaSituacionFiscalMoral !== '' &&
              comprobanteDomicilioFiscalMoral !== '';
+      
+      // Solo validar constancia si el monto >= 188183
+      if (montoNumerico >= 188183) {
+        return basicValidation && constanciaSituacionFiscalMoral !== '';
+      }
+      return basicValidation;
     } else if (donorData?.tipo_persona === 'fisica') {
-      return curp.trim() !== '' &&
+      const basicValidation = curp.trim() !== '' &&
              regimenFiscal.trim() !== '' &&
              identificacionVigente !== '' &&
-             constanciaSituacionFiscalFisica !== '' &&
              comprobanteDomicilioFisica !== '';
+      
+      // Solo validar constancia si el monto >= 188183
+      if (montoNumerico >= 188183) {
+        return basicValidation && constanciaSituacionFiscalFisica !== '';
+      }
+      return basicValidation;
     }
     
     return false;
