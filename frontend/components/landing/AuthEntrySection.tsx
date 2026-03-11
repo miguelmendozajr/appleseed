@@ -7,13 +7,13 @@ import { LogIn, UserPlus } from 'lucide-react';
 export default function AuthEntrySection() {
   const cards = [
     {
-      title: 'Iniciar sesión para Donate',
+      title: 'Iniciar sesión para Donante',
       desc: 'Accede como donante para gestionar tus donaciones.',
       href: '/donor/login',
       icon: LogIn,
     },
     {
-      title: 'Registrar Donate',
+      title: 'Registrar Donante',
       desc: 'Crea tu cuenta de donante en pocos pasos.',
       href: '/donor/signup',
       icon: UserPlus,

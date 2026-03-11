@@ -501,7 +501,8 @@ export default function DonorsPage() {
     // Validar documentos adicionales si el monto >= 189,000
     const montoNumerico = tipoDonacion === 'especie' ? parseFloat(valorEstimado) : parseFloat(monto);
     if (montoNumerico > 188183) {
-      if (declaracionOrigenRecursos === '') return false;
+      // Declaración de origen de recursos solo para especie
+      if (tipoDonacion === 'especie' && declaracionOrigenRecursos === '') return false;
       if (donorData?.tipo_persona === 'moral' && identificacionBeneficiarioControlador === '') return false;
     }
     
@@ -886,7 +887,7 @@ export default function DonorsPage() {
                     </>
                   )}
 
-                  {parseFloat(valorEstimado) >= 188183 && donorData?.tipo_persona === 'fisica' && (
+                  {parseFloat(valorEstimado) >= 188183 && (
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
@@ -951,47 +952,6 @@ export default function DonorsPage() {
                       />
                     </div>
                   </div>
-
-                  {parseFloat(monto) >= 188183 && donorData?.tipo_persona === 'fisica' && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
-                      </label>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <input
-                            type="file"
-                            id="declaracionOrigenRecursosTransferencia"
-                            required
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="declaracionOrigenRecursosTransferencia"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                          >
-                            <span className="text-sm text-gray-600">
-                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                            </span>
-                          </label>
-                        </div>
-                        {declaracionOrigenRecursos && (
-                          <a
-                            href={getUrlString(declaracionOrigenRecursos)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
-                          >
-                            Ver archivo
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
 
@@ -1017,47 +977,6 @@ export default function DonorsPage() {
                       />
                     </div>
                   </div>
-
-                  {parseFloat(monto) >= 188183 && donorData?.tipo_persona === 'fisica' && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
-                      </label>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <input
-                            type="file"
-                            id="declaracionOrigenRecursosEfectivo"
-                            required
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="declaracionOrigenRecursosEfectivo"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                          >
-                            <span className="text-sm text-gray-600">
-                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                            </span>
-                          </label>
-                        </div>
-                        {declaracionOrigenRecursos && (
-                          <a
-                            href={getUrlString(declaracionOrigenRecursos)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
-                          >
-                            Ver archivo
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
 
@@ -1083,47 +1002,6 @@ export default function DonorsPage() {
                       />
                     </div>
                   </div>
-
-                  {parseFloat(monto) >= 188183 && donorData?.tipo_persona === 'fisica' && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Declaración Firmada de Origen de Recursos {uploadingFile && '(Subiendo...)'}
-                      </label>
-                      <div className="flex gap-2">
-                        <div className="flex-1">
-                          <input
-                            type="file"
-                            id="declaracionOrigenRecursosCheque"
-                            required
-                            accept=".pdf,image/*"
-                            onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) handleFileUpload(file, setDeclaracionOrigenRecursos, setDeclaracionOrigenRecursosFileName);
-                            }}
-                            className="hidden"
-                          />
-                          <label
-                            htmlFor="declaracionOrigenRecursosCheque"
-                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                          >
-                            <span className="text-sm text-gray-600">
-                              {declaracionOrigenRecursosFileName || 'Seleccionar archivo...'}
-                            </span>
-                          </label>
-                        </div>
-                        {declaracionOrigenRecursos && (
-                          <a
-                            href={getUrlString(declaracionOrigenRecursos)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
-                          >
-                            Ver archivo
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                  )}
                 </>
               )}
 
@@ -1461,26 +1339,38 @@ export default function DonorsPage() {
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
                         Identificación del Beneficiario Controlador {uploadingFile && '(Subiendo...)'}
                       </label>
-                      <div className="relative">
-                        <input
-                          type="file"
-                          id="identificacionBeneficiarioControlador"
-                          required
-                          accept=".pdf,image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) handleFileUpload(file, setIdentificacionBeneficiarioControlador, setIdentificacionBeneficiarioControladorFileName);
-                          }}
-                          className="hidden"
-                        />
-                        <label
-                          htmlFor="identificacionBeneficiarioControlador"
-                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
-                        >
-                          <span className="text-sm text-gray-600">
-                            {identificacionBeneficiarioControladorFileName || 'Seleccionar archivo...'}
-                          </span>
-                        </label>
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <input
+                            type="file"
+                            id="identificacionBeneficiarioControlador"
+                            required
+                            accept=".pdf,image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleFileUpload(file, setIdentificacionBeneficiarioControlador, setIdentificacionBeneficiarioControladorFileName);
+                            }}
+                            className="hidden"
+                          />
+                          <label
+                            htmlFor="identificacionBeneficiarioControlador"
+                            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-[#8BC34A] focus-within:border-transparent transition-colors text-black bg-white flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                          >
+                            <span className="text-sm text-gray-600">
+                              {identificacionBeneficiarioControladorFileName || 'Seleccionar archivo...'}
+                            </span>
+                          </label>
+                        </div>
+                        {identificacionBeneficiarioControlador && (
+                          <a
+                            href={getUrlString(identificacionBeneficiarioControlador)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2 cursor-pointer"
+                          >
+                            Ver archivo
+                          </a>
+                        )}
                       </div>
                     </div>
                   )}
